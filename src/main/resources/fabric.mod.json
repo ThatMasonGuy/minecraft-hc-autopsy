@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "hc-autopsy",
+	"version": "${version}",
+	"name": "HC Autopsy",
+	"description": "A Hardcore run postmortem system for Fabric servers. HC Autopsy snapshots every player's full Minecraft stats at the first death of a world (the wipe), stores per-world and lifetime datasets, and aggregates totals across all worlds so you can review any run months later—who wiped it, what happened, and how the server performed overall.",
+	"authors": [
+		"TempestStudios"
+	],
+	"contact": {
+		"homepage": "https://mxn.au",
+		"sources": "https://github.com/ThatMasonGuy"
+	},
+	"license": "All-Rights-Reserved",
+	"icon": "assets/hc-autopsy/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"tempeststudios.hcautopsy.HCAutopsy"
+		],
+		"client": [
+			"tempeststudios.hcautopsy.HCAutopsyClient"
+		]
+	},
+	"mixins": [
+		"hc-autopsy.mixins.json",
+		{
+			"config": "hc-autopsy.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.18.4",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
