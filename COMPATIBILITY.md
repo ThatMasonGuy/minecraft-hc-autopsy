@@ -10,12 +10,14 @@ model while auditing this mod's server-only API surface.
 
 HC Autopsy currently has a supported `1.21.11` build profile. The preferred
 candidate shape is `1.20-1.21.11` plus `26.1-26.2-pre-3`, targeting two
-release artifacts if evidence allows it. Fallback donor split profiles also
-exist for compile probing, but they are not the recommended release shape.
+release artifacts. Both preferred candidate profiles now pass local
+`buildRelease` compile probes and generated release-jar metadata checks.
+Fallback donor split profiles still exist for deeper probing, but they are not
+the recommended release shape.
 
-This document is a source-read and local bytecode-inspection risk map, not a
-completed compile-probe report. Do not promote any profile to supported until
-the exact jar has built, verified metadata, launched in dedicated-server smoke
+This document is still not a completed runtime compatibility report. Do not
+promote any profile to supported until the exact jar has built, verified
+metadata, passed binary runtime checks, launched in dedicated-server smoke
 tests, and passed every exact runtime listed by the profile.
 
 ## Product Decision
@@ -45,7 +47,7 @@ Use the fewest compatibility-group jars that can honestly support the targeted
 Minecraft range. The donor repo's split was required by that mod; it is not a
 recommendation for HC Autopsy.
 
-Preferred two-artifact hypothesis:
+Preferred two-artifact shape after local compile and metadata probes:
 
 | Release profile | Compile anchor | Runtime claim after smoke tests | Java | Source compat group |
 | --- | --- | --- | ---: | --- |
@@ -60,9 +62,9 @@ Acceptable three-artifact fallback if Java/API boundaries require it:
 | `1.20.5-1.21.11` | `1.21.11` | `1.20.5` through `1.21.11` | 21 | `1.20.5-1.21.11` |
 | `26.1-26.2-pre-3` | `26.2-pre-3` | `26.1`, `26.1.1`, `26.1.2`, `26.2-pre-3` | 25 | `26.x` |
 
-Only fall back to narrower shapes if compile probes, binary runtime checks,
-dependency metadata, or smoke tests prove HC Autopsy really needs it. Prefer
-the three-artifact fallback before the donor-style four-way split.
+Only fall back to narrower shapes if binary runtime checks, dependency
+metadata, or smoke tests prove HC Autopsy really needs it. Prefer the
+three-artifact fallback before the donor-style four-way split.
 
 ## Mapping Strategy
 
@@ -111,7 +113,8 @@ against anchor versions including `1.20`, `1.21.10`, `1.21.11`, `26.1.2`, and
 | Fabric lifecycle | `SERVER_STARTED` and `SERVER_STOPPING` are present across inspected Fabric API anchors. | Direct registration is probably fine. |
 | Fabric join event | `ServerPlayConnectionEvents.JOIN` is present across inspected Fabric API anchors. | Direct registration is probably fine. |
 | Command registration | `CommandRegistrationCallback.register(dispatcher, registryAccess, environment)` is stable in inspected anchors. | Official-name command source imports are the bigger change. |
-| Text click/hover events | `1.20` uses class constructors; `1.21.11+` and `26.x` use newer interface/subtype shapes. | Add `TextEventCompat` or initially remove clickable run-list entries. |
+| Text click/hover events | `1.20` uses class constructors; `1.21.11+` and `26.x` use newer interface/subtype shapes. | `TextEventCompat` now constructs events reflectively while leaving command rendering shared. |
+| Online player name lookup | `PlayerList#getPlayerByName(String)` exists across inspected anchors. | Use `getPlayerByName` instead of the newer overloaded `getPlayer(String)` call. |
 
 ## HCAutopsy API Surface
 
@@ -125,6 +128,7 @@ normalization:
 - `Commands`
 - `CommandSourceStack`
 - `ClickEvent`, `HoverEvent`, `MutableComponent`, `Component`, and `ChatFormatting`
+- `TextEventCompat` for cross-version click/hover event construction
 - `ServerPlayer`
 - `ServerPlayer#die` mixin target
 - `DamageSource`
@@ -190,13 +194,14 @@ Risk:
 - Operator-player permission checks should not be broadened until the correct
   version-safe server API is verified.
 
-Likely shim:
+Implemented shim:
 
 - `TextEventCompat` for clickable/hoverable run-list entries.
+
+Remaining possible shims:
+
 - `ServerPermissionCompat` if player operators are allowed to continue runs
   later.
-- If `TextEventCompat` is not worth the first implementation pass, keep run
-  list entries plain text and restore clickability after profile builds pass.
 
 ### Stat Snapshot Paths
 
@@ -323,6 +328,24 @@ Dedicated-server smoke should prove:
 - the server exits cleanly
 
 No client smoke gate is planned because the mod is server-only.
+
+## Current Probe Evidence
+
+Local build evidence from 2026-06-04:
+
+- `.\gradlew.bat buildRelease "-Pminecraft_version_profile=1.20-1.21.11" --no-daemon --console=plain`
+  passed.
+- The `1.20-1.21.11` release jar metadata expands to server-only Fabric
+  metadata with `minecraft: >=1.20 <=1.21.11`, `java: >=17`, and Mixin
+  `JAVA_17`.
+- `.\gradlew.bat buildRelease "-Pminecraft_version_profile=26.1-26.2-pre-3" --no-daemon --console=plain`
+  passed.
+- The `26.1-26.2-pre-3` release jar metadata expands to server-only Fabric
+  metadata with `minecraft: >=26.1 <=26.2-pre.3`, `java: >=25`, and Mixin
+  `JAVA_25`.
+
+These are compile and packaging checks only. They do not replace binary runtime
+checks or dedicated-server smoke validation.
 
 ## Immediate Implementation Notes
 

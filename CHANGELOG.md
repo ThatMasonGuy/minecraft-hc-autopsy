@@ -32,6 +32,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   - `26.1-26.2-pre-3`
 - Added profile helper tasks: `printVersionProfile`, `listVersionProfiles`,
   `buildRelease`, `buildAllVersions`, and `buildValidationVersions`.
+- Added `TextEventCompat` to bridge chat click/hover event construction across
+  the `1.20` text API and the `1.21.11+` / `26.x` record-style event API.
 
 ### Changed
 
@@ -54,6 +56,9 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   `ServerPlayer#die`, `CommandSourceStack`, `Commands`, `Component`,
   `ChatFormatting`, `LevelResource.PLAYER_STATS_DIR`, and
   `ServerPlayer#getStats().save()`.
+- Changed `/hcautopsy player <name> totals` online lookup to use
+  `PlayerList#getPlayerByName`, which is available across the current
+  compatibility anchors.
 
 ### Removed
 
@@ -74,6 +79,9 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   official-name server API surface used by the donor pipeline.
 - Documented that profile builds, smoke launcher automation, and guarded
   Modrinth publishing are planned but not implemented yet.
+- Documented that the preferred two-artifact candidate shape now passes local
+  compile and release-jar metadata probes while still requiring binary runtime
+  checks and dedicated-server smoke validation before promotion.
 
 ## 1.0.0 Current Baseline
 

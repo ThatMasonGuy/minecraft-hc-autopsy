@@ -6,12 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import tempeststudios.hcautopsy.HCAutopsy;
+import tempeststudios.hcautopsy.compat.TextEventCompat;
 import tempeststudios.hcautopsy.data.Run;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.RunState;
@@ -176,9 +175,8 @@ public class CommandRegistry {
                     .append(Component.literal(formatDuration(meta.getDurationMs())).withStyle(ChatFormatting.AQUA));
 
             // Make it clickable
-            runEntry.setStyle(runEntry.getStyle()
-                    .withClickEvent(new ClickEvent.RunCommand("/hcautopsy run " + runId))
-                    .withHoverEvent(new HoverEvent.ShowText(Component.literal("Click for details"))));
+            TextEventCompat.applyRunCommand(runEntry, "/hcautopsy run " + runId,
+                    Component.literal("Click for details"));
 
             message.append(runEntry).append(Component.literal("\n"));
             shown++;
@@ -246,7 +244,7 @@ public class CommandRegistry {
         UUID playerUuid = null;
 
         // Try to find the player online
-        var player = ctx.getSource().getServer().getPlayerList().getPlayer(playerName);
+        var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(playerName);
         if (player != null) {
             playerUuid = player.getUUID();
         }

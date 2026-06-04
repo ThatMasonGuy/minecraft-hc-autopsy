@@ -2,8 +2,8 @@
 
 This directory contains the multi-version profile metadata used by Gradle.
 The default supported profile is `1.21.11`; broader compatibility profiles are
-tracked as candidates until compile probes, metadata checks, and launcher smoke
-tests prove them.
+tracked as candidates until compile probes, metadata checks, binary runtime
+checks, and launcher smoke tests prove them.
 
 ## Goal
 
@@ -32,15 +32,17 @@ supported_minecraft_version_profiles=1.21.11
 candidate_minecraft_version_profiles=1.20-1.21.11,26.1-26.2-pre-3
 ```
 
-Only keep a profile supported while it builds, verifies metadata, and has
-passing launcher smoke records for every listed game version.
+Only keep a profile supported while it builds, verifies metadata, passes binary
+runtime checks, and has passing launcher smoke records for every listed game
+version.
 
 Candidate profiles should start as broad as honestly possible. The preferred
-candidate list is `1.20-1.21.11,26.1-26.2-pre-3`. Donor split profiles such as
-`1.20-1.20.4` and `1.20.5-1.21.10`, plus the cleaner `1.20.5-1.21.11`
-fallback, are probes, not the target shape for HC Autopsy. Split a profile only
-after compile probes, binary runtime checks, dependency metadata, or smoke tests
-prove that one jar cannot honestly cover the proposed range.
+candidate list is `1.20-1.21.11,26.1-26.2-pre-3`, and both candidates now pass
+local `buildRelease` compile and release-jar metadata probes. Donor split
+profiles such as `1.20-1.20.4` and `1.20.5-1.21.10`, plus the cleaner
+`1.20.5-1.21.11` fallback, are probes, not the target shape for HC Autopsy.
+Split a profile only after binary runtime checks, dependency metadata, or smoke
+tests prove that one jar cannot honestly cover the proposed range.
 
 ## Profile Fields
 
@@ -101,8 +103,9 @@ Build every supported profile:
 .\gradlew.bat buildAllVersions --no-daemon --console=plain
 ```
 
-`buildValidationVersions` also exists, but candidate profiles are expected to
-need compatibility shims before they pass.
+`buildValidationVersions` also exists and currently builds the default profile
+plus the preferred candidate profiles. Passing that task is still a
+compile/package gate, not a runtime promotion signal.
 
 After smoke support exists:
 

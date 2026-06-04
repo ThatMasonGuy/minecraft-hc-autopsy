@@ -32,10 +32,10 @@ Current implementation:
 Planned migration target:
 
 - Minecraft: `1.20` through `26.2-pre-3`, published as compatibility-group jars
-- Preferred profile plan: try `1.20-1.21.11` and `26.1-26.2-pre-3` first,
-  splitting only if compile probes, metadata checks, or smoke tests require it
+- Preferred profile plan: `1.20-1.21.11` and `26.1-26.2-pre-3`; both currently
+  pass local compile and release-jar metadata probes
 - Java: `17+` for the preferred `1.20-1.21.11` probe and `25+` for `26.x`;
-  Java/API failures may force a three-artifact fallback
+  runtime or smoke-test failures may still force a three-artifact fallback
 
 ## Installation
 
@@ -179,9 +179,9 @@ Profile release jars are collected under:
 build/release/<profile_id>/
 ```
 
-The planned multi-version pipeline still needs candidate compile shims,
-metadata verification, dedicated-server smoke validation, and guarded Modrinth
-publishing.
+The planned multi-version pipeline still needs binary runtime checks,
+dedicated-server smoke validation, and guarded Modrinth publishing before
+candidate profiles can be promoted.
 
 ## Project Docs
 

@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: Gradle version-profile foundation. The default supported
-profile is still Minecraft `1.21.11`, but the build now selects Minecraft,
-Fabric Loader, Fabric API, Loom, Java, metadata, and server-only compat
-overlays from `gradle/version-profiles/*.properties`.
+Current checkpoint: broad compatibility compile probes. The default supported
+profile is still Minecraft `1.21.11`, but the preferred two-artifact candidate
+shape now compiles and produces correct server-only metadata for
+`1.20-1.21.11` and `26.1-26.2-pre-3`.
 
 ## Project Workflow
 
@@ -21,9 +21,9 @@ overlays from `gradle/version-profiles/*.properties`.
 - Current default source and metadata target Minecraft `1.21.11`.
 - Current Gradle setup is profile-driven. The default profile is `1.21.11`.
 - `supported_minecraft_version_profiles` currently contains only `1.21.11`.
-- Preferred candidate profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`,
-  targeting a two-artifact release if compile probes, metadata checks, binary
-  runtime checks, and smoke tests allow it.
+- Preferred candidate profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`.
+  Both currently pass compile and release-jar metadata probes. They still need
+  binary runtime checks and dedicated-server smoke validation before promotion.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -98,25 +98,41 @@ Known command limitations:
   profile can configure like the donor pipeline.
 - Added profile helper tasks: `printVersionProfile`, `listVersionProfiles`,
   `buildRelease`, `buildAllVersions`, and `buildValidationVersions`.
+- Added `TextEventCompat` so `/hcautopsy run list` keeps clickable run entries
+  across the `1.20` class-constructor chat event API and the `1.21.11+` /
+  `26.x` record-style chat event API.
+- Switched online player name resolution to `PlayerList#getPlayerByName`, which
+  is available across the inspected `1.20`, `1.21.11`, and `26.x` anchors.
+- Verified `buildRelease` for the preferred `1.20-1.21.11` candidate and
+  confirmed generated metadata declares `minecraft: >=1.20 <=1.21.11`,
+  `java: >=17`, `environment: server`, and Mixin `JAVA_17`.
+- Verified `buildRelease` for the preferred `26.1-26.2-pre-3` candidate and
+  confirmed generated metadata declares `minecraft: >=26.1 <=26.2-pre.3`,
+  `java: >=25`, `environment: server`, and Mixin `JAVA_25`.
 
 ## Current Compatibility Conclusion
 
-The current repo is only proven at Minecraft `1.21.11`.
+The current supported profile is only `1.21.11`, but the preferred candidate
+release shape has passed compile and release metadata probes:
+
+- `1.20-1.21.11`
+- `26.1-26.2-pre-3`
 
 The target migration should use compatibility-group profiles rather than one jar
 per exact Minecraft patch. The active candidate list should try the broadest
 honest shape first:
 
 - supported: `1.21.11`
-- preferred candidate: `1.20-1.21.11`
-- candidate: `26.1-26.2-pre-3`, using source compat group `26.x`
+- compile-proven preferred candidate: `1.20-1.21.11`
+- compile-proven candidate: `26.1-26.2-pre-3`, using source compat group
+  `26.x`
 
 Fallback probe profiles `1.20-1.20.4`, `1.20.5-1.21.10`, and
 `1.20.5-1.21.11` exist because we may need narrower evidence anchors. They are
-not recommendations for HC Autopsy unless the broad profile fails. Promote a
-profile to supported only after build, metadata verification, binary runtime
-checks, and launcher smoke validation pass for every exact Minecraft runtime
-listed by the profile.
+not recommendations for HC Autopsy unless binary runtime checks or smoke tests
+prove the broad profile cannot honestly hold. Promote a profile to supported
+only after build, metadata verification, binary runtime checks, and launcher
+smoke validation pass for every exact Minecraft runtime listed by the profile.
 
 Confirmed mapping decision implemented for the current build: HC Autopsy has
 moved away from Yarn mappings and now aligns with the Lifetime Stat Tracker
@@ -190,7 +206,7 @@ candidate cannot honestly hold.
      entrypoint, and no client mixin config.
    - Reconcile repository license and Fabric metadata before publishing.
 
-6. Compatibility shims.
+6. Compatibility shims. Started.
    - Add only the small adapters needed by compile probes.
    - Prefer shared code calling compat adapters over copying full feature
      classes into overlay folders.

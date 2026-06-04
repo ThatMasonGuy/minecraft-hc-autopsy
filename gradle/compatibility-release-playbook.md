@@ -85,10 +85,12 @@ Use a fast local loop and move expensive proof to CI:
 
 1. Current/default-profile build for normal development.
 2. Targeted profile build when touching a specific Minecraft version.
-3. Build all supported profiles when changing metadata, overlays, packaging, or
+3. Build candidate profiles with `buildValidationVersions` before assuming a
+   compatibility split still holds.
+4. Build all supported profiles when changing metadata, overlays, packaging, or
    shared code with cross-version risk.
-4. Focused dedicated-server launcher smoke test for suspected runtime issues.
-5. Full smoke matrix in GitHub Actions before publishing.
+5. Focused dedicated-server launcher smoke test for suspected runtime issues.
+6. Full smoke matrix in GitHub Actions before publishing.
 
 The key invariant is that the packaged release jar launches under every
 Minecraft version listed in `modrinth_game_versions`.
