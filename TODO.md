@@ -1,9 +1,10 @@
 # HC Autopsy TODO
 
-Current checkpoint: broad compatibility compile probes. The default supported
-profile is still Minecraft `1.21.11`, but the preferred two-artifact candidate
-shape now compiles and produces correct server-only metadata for
-`1.20-1.21.11` and `26.1-26.2-pre-3`.
+Current checkpoint: server smoke and Modrinth dry-run foundation. The default
+supported profile is still Minecraft `1.21.11`; it now has a passing
+dedicated-server smoke record and a successful local Modrinth upload-plan dry
+run. Candidate profiles remain non-publishable until their exact runtime smoke
+matrix passes.
 
 ## Project Workflow
 
@@ -21,9 +22,11 @@ shape now compiles and produces correct server-only metadata for
 - Current default source and metadata target Minecraft `1.21.11`.
 - Current Gradle setup is profile-driven. The default profile is `1.21.11`.
 - `supported_minecraft_version_profiles` currently contains only `1.21.11`.
+- `1.21.11` has a passing dedicated-server smoke record in
+  `gradle/smoke-tests.json`.
 - Preferred candidate profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`.
   Both currently pass compile and release-jar metadata probes. They still need
-  binary runtime checks and dedicated-server smoke validation before promotion.
+  dedicated-server smoke validation before promotion.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -109,6 +112,18 @@ Known command limitations:
 - Verified `buildRelease` for the preferred `26.1-26.2-pre-3` candidate and
   confirmed generated metadata declares `minecraft: >=26.1 <=26.2-pre.3`,
   `java: >=25`, `environment: server`, and Mixin `JAVA_25`.
+- Added release metadata verification to `buildRelease`.
+- Added the `smokelaunch` Gradle module and server-only smoke tasks:
+  `smokeTestSupportedServers`, `smokeTestValidationServers`, and
+  `smokeTestSelectedServers`.
+- Added exact smoke runtime profiles for every Minecraft version claimed by
+  the candidate release profiles.
+- Added `gradle/smoke-tests.json` with a passing supported `1.21.11` server
+  smoke record and pending candidate rows.
+- Added GitHub Actions workflows for fast supported-profile builds, manual
+  candidate smoke validation, and guarded Modrinth publish/dry-run validation.
+- Added guarded Modrinth upload-plan tasks and verified
+  `publishModrinthDryRun` locally. No Modrinth API upload was performed.
 
 ## Current Compatibility Conclusion
 
@@ -211,26 +226,29 @@ candidate cannot honestly hold.
    - Prefer shared code calling compat adapters over copying full feature
      classes into overlay folders.
 
-7. Release jar verification.
+7. Release jar verification. Completed for current profile tasks.
    - `buildRelease` and `buildAllVersions` exist.
-   - Add metadata verification tasks.
-   - Verify mod id, version, license, dependencies, icon, mixin configs, and
-     expanded placeholders.
+   - Metadata verification is wired into `buildRelease`.
+   - Verifies mod id, version, license, dependencies, icon, server-only
+     environment, mixin configs, and expanded placeholders.
 
-8. Smoke launcher automation.
-   - Add a smoke-launch module.
-   - Add dedicated-server smoke tests as the required launcher gate.
-   - Record smoke status before promoting any profile to supported.
+8. Smoke launcher automation. Started.
+   - Added the `smokelaunch` module.
+   - Added dedicated-server smoke tests as the required launcher gate.
+   - Recorded a passing supported `1.21.11` smoke row.
+   - Candidate rows remain pending until GitHub smoke validation passes.
 
-9. GitHub Actions workflows.
-   - Keep push/PR validation fast with supported-profile builds.
-   - Add a manual candidate smoke validation workflow.
-   - Add a guarded manual Modrinth publishing workflow with dry-run default.
+9. GitHub Actions workflows. Completed for initial smoke/dry-run gates.
+   - Push/PR validation runs supported-profile builds and smoke matrix checks.
+   - Manual candidate smoke validation workflow exists.
+   - Guarded manual Modrinth publishing workflow exists with dry-run default.
 
-10. Modrinth publishing automation.
-    - Add upload-plan generation and guarded publish tasks.
-    - Require per-version release notes before publishing.
-    - Publish supported profiles only.
+10. Modrinth publishing automation. Started.
+    - Upload-plan generation and guarded publish tasks exist.
+    - Per-version release notes are required before dry-run or publishing.
+    - Only supported profiles are included in upload plans.
+    - Real publishing remains blocked without explicit confirmation, token, and
+      real Modrinth project id.
 
 11. Release promotion.
     - Move candidates to supported only after exact-version launcher smoke

@@ -70,6 +70,8 @@ public class HCAutopsy implements ModInitializer {
 			}
 		});
 
+		HCAutopsyServerSmokeTest.registerIfEnabled();
+
 		LOGGER.info("HC Autopsy initialized successfully");
 	}
 

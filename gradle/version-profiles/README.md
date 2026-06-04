@@ -17,10 +17,10 @@ and published for several compatible Minecraft versions.
 
 Exact smoke runtime profiles, such as `1.20.1.properties`, are different from
 release profiles. They exist so the smoke launcher can boot the exact Minecraft
-runtime claimed by a release profile. Do not add these smoke-only profiles to
-`supported_minecraft_version_profiles` or
-`candidate_minecraft_version_profiles` unless we intentionally decide to
-publish more jars.
+runtime claimed by a release profile. These smoke-only profiles are now present
+for all currently claimed runtime versions. Do not add them to
+`supported_minecraft_version_profiles` or `candidate_minecraft_version_profiles`
+unless we intentionally decide to publish more jars.
 
 ## Profile Lists
 

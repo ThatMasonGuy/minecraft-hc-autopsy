@@ -1,7 +1,9 @@
 # Modrinth Publishing
 
-Modrinth publishing is planned but not implemented yet. The intended model is
-guarded Gradle tasks plus a manual GitHub Actions workflow with dry-run default.
+Modrinth publishing automation is implemented as guarded Gradle tasks plus a
+manual GitHub Actions workflow with dry-run default. Real publishing remains
+blocked until a real Modrinth project id, token, and explicit confirmation are
+provided.
 
 ## Publishing Model
 
@@ -9,7 +11,7 @@ Publishing should be driven by supported Minecraft version profiles only.
 Profiles in `candidate_minecraft_version_profiles` must be ignored until they
 are promoted to `supported_minecraft_version_profiles`.
 
-Modrinth project id: `TODO`.
+Modrinth project id: `4eBkeUAl`.
 
 Fabric API dependency project id: `P7dR8mSH`.
 
@@ -25,7 +27,7 @@ version entries unique, such as:
 1.1.0+mc26.1-26.2-pre-3
 ```
 
-## Planned Gradle Tasks
+## Gradle Tasks
 
 ```powershell
 .\gradlew.bat publishValidation
@@ -41,6 +43,9 @@ version entries unique, such as:
   calling the Modrinth API.
 - `publishModrinth` should perform the real upload and require
   `-Pmodrinth_confirm_publish=true`.
+- Dry-run-only plans may use `-Pmodrinth_allow_placeholder_project=true` only
+  before a real project id is configured; real publishing must not use a
+  placeholder.
 
 The upload plan should include:
 
@@ -72,9 +77,9 @@ management, but tasks should not print token values.
 
 GitHub publishing should read the repository secret named `MODRINTH_TOKEN`.
 
-## Planned GitHub Workflow
+## GitHub Workflow
 
-Use a manual `modrinth publish` workflow in `.github/workflows/`.
+Use the manual `modrinth publish` workflow in `.github/workflows/`.
 
 Inputs:
 
@@ -86,6 +91,14 @@ Inputs:
 The workflow should install required Java toolchains, run supported-profile
 validation, and capture upload plans, release jars, smoke logs, smoke mod lists,
 smoke run directories, and reports as artifacts.
+
+The current local dry run was verified with:
+
+```powershell
+.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain
+```
+
+It wrote `build/modrinth/upload-plan.json` and did not call the Modrinth API.
 
 ## Git Tags And GitHub Releases
 

@@ -34,6 +34,18 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   `buildRelease`, `buildAllVersions`, and `buildValidationVersions`.
 - Added `TextEventCompat` to bridge chat click/hover event construction across
   the `1.20` text API and the `1.21.11+` / `26.x` record-style event API.
+- Added release metadata verification to `buildRelease`.
+- Added a `smokelaunch` module and server-only smoke tasks for supported,
+  validation, and selected Minecraft profile launches.
+- Added exact smoke runtime profiles for the Minecraft versions claimed by the
+  release profiles.
+- Added `gradle/smoke-tests.json` and recorded a passing supported `1.21.11`
+  dedicated-server smoke result.
+- Added GitHub Actions workflows for manual candidate smoke validation and
+  guarded Modrinth dry-run/publish validation.
+- Added guarded Modrinth upload-plan tasks, `publishValidation`,
+  `prepareModrinthUploads`, `publishModrinthDryRun`, and `publishModrinth`.
+- Added Modrinth-facing `gradle/release-notes/1.0.0.md`.
 
 ### Changed
 
@@ -82,6 +94,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Documented that the preferred two-artifact candidate shape now passes local
   compile and release-jar metadata probes while still requiring binary runtime
   checks and dedicated-server smoke validation before promotion.
+- Documented that candidate profiles remain non-publishable until all exact
+  dedicated-server smoke rows pass.
 
 ## 1.0.0 Current Baseline
 

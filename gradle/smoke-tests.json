@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "1.21.11": {
+      "profile_id": "1.21.11",
+      "game_versions": {
+        "1.21.11": {
+          "status": "pass",
+          "tested_at": "2026-06-04",
+          "method": "local smokeTestSelectedServers launch",
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly."
+        }
+      }
+    },
+    "1.20-1.21.11": {
+      "profile_id": "1.20-1.21.11",
+      "game_versions": {
+        "1.20": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.20.1": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.20.2": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.20.3": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.20.4": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.20.5": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.20.6": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.1": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.2": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.3": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.4": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.5": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.6": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.7": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.8": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.9": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.10": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        },
+        "1.21.11": {
+          "status": "pending",
+          "notes": "Candidate broad-profile dedicated-server smoke validation pending."
+        }
+      }
+    },
+    "26.1-26.2-pre-3": {
+      "profile_id": "26.1-26.2-pre-3",
+      "game_versions": {
+        "26.1": {
+          "status": "pending",
+          "notes": "Candidate 26.x dedicated-server smoke validation pending."
+        },
+        "26.1.1": {
+          "status": "pending",
+          "notes": "Candidate 26.x dedicated-server smoke validation pending."
+        },
+        "26.1.2": {
+          "status": "pending",
+          "notes": "Candidate 26.x dedicated-server smoke validation pending."
+        },
+        "26.2-pre-3": {
+          "status": "pending",
+          "notes": "Candidate 26.x dedicated-server smoke validation pending."
+        }
+      }
+    }
+  }
+}

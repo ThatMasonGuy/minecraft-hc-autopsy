@@ -29,3 +29,7 @@ pluginManagement {
 }
 
 rootProject.name = 'hc-autopsy'
+
+include 'smokelaunch'
+
+project(':smokelaunch').projectDir = file('modules/smokelaunch')

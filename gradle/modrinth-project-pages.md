@@ -6,7 +6,7 @@ description pages. Update it before changing live Modrinth project metadata.
 ## HC Autopsy
 
 - Modrinth project name: `HC Autopsy`
-- Project ID: `TODO`
+- Project ID: `4eBkeUAl`
 - Summary:
 
 Capture Hardcore world wipes, player stat snapshots, and lifetime postmortems.

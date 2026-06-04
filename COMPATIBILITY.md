@@ -343,9 +343,13 @@ Local build evidence from 2026-06-04:
 - The `26.1-26.2-pre-3` release jar metadata expands to server-only Fabric
   metadata with `minecraft: >=26.1 <=26.2-pre.3`, `java: >=25`, and Mixin
   `JAVA_25`.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11" --no-daemon --console=plain`
+  passed for the supported `1.21.11` release jar.
+- `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain`
+  passed, wrote a local upload plan, and did not call the Modrinth API.
 
-These are compile and packaging checks only. They do not replace binary runtime
-checks or dedicated-server smoke validation.
+The candidate profiles still have pending dedicated-server smoke rows for the
+exact Minecraft versions they claim. Do not promote them until those rows pass.
 
 ## Immediate Implementation Notes
 

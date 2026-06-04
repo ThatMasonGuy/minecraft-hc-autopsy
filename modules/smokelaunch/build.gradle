@@ -1,0 +1,103 @@
+apply plugin: rootProject.loom_plugin_id
+
+base {
+	archivesName = 'hc-autopsy-smoke-launcher'
+}
+
+def smokeTestEnabled = (rootProject.findProperty('hcautopsy_smoke_test') ?: 'false').toString().toBoolean()
+def smokeInstallSet = rootProject.findProperty('hcautopsy_smoke_install_set')
+def smokeRunId = smokeInstallSet != null && !smokeInstallSet.toString().isBlank()
+		? smokeInstallSet.toString()
+		: 'default'
+def smokeWorkingDir = rootProject.layout.buildDirectory
+		.dir("smoke-run/${rootProject.minecraft_version_profile}/${project.name}/${smokeRunId}")
+		.get()
+		.asFile
+def smokeRunDir = projectDir.toPath().relativize(smokeWorkingDir.toPath()).toString()
+
+loom {
+	if (smokeTestEnabled) {
+		runs {
+			server {
+				runDir smokeRunDir
+			}
+		}
+	}
+}
+
+sourceSets {
+	main {
+		java.setSrcDirs([])
+		resources.setSrcDirs([])
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+	if (!rootProject.unobfuscated_minecraft) {
+		mappings loom.officialMojangMappings()
+	}
+	add(rootProject.fabric_dependency_configuration, "net.fabricmc:fabric-loader:${rootProject.loader_version}")
+	add(rootProject.fabric_dependency_configuration, "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}")
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = rootProject.target_java_version
+}
+
+tasks.withType(JavaExec).configureEach {
+	javaLauncher = javaToolchains.launcherFor {
+		languageVersion = JavaLanguageVersion.of(rootProject.target_java_version)
+	}
+	jvmArgs('-Xmx2G')
+
+	def smokeMods = rootProject.findProperty('hcautopsy_smoke_mods')
+	if (smokeMods != null && !smokeMods.toString().isBlank()) {
+		jvmArgs("-Dfabric.addMods=${smokeMods}")
+	}
+
+	if (smokeTestEnabled) {
+		jvmArgs('-Dhcautopsy.smokeTest=true')
+		jvmArgs("-Dhcautopsy.smokeMinecraftProfile=${rootProject.minecraft_version_profile}")
+		jvmArgs("-Dhcautopsy.smokeGameVersion=${rootProject.minecraft_version}")
+
+		def smokeReleaseProfile = rootProject.findProperty('hcautopsy_smoke_release_profile')
+		if (smokeReleaseProfile != null && !smokeReleaseProfile.toString().isBlank()) {
+			jvmArgs("-Dhcautopsy.smokeReleaseProfile=${smokeReleaseProfile}")
+		}
+
+		if (smokeInstallSet != null && !smokeInstallSet.toString().isBlank()) {
+			jvmArgs("-Dhcautopsy.smokeInstallSet=${smokeInstallSet}")
+		}
+
+		args('nogui')
+		workingDir smokeWorkingDir
+		doFirst {
+			smokeWorkingDir.mkdirs()
+			new File(smokeWorkingDir, 'eula.txt').text = 'eula=true' + System.lineSeparator()
+			new File(smokeWorkingDir, 'server.properties').text = [
+					'allow-flight=true',
+					'enable-command-block=false',
+					'enable-query=false',
+					'enable-rcon=false',
+					'level-name=HCAutopsySmokeWorld',
+					'max-players=1',
+					'motd=HC Autopsy Smoke Test',
+					'online-mode=false',
+					'server-port=0',
+					'simulation-distance=2',
+					'spawn-protection=0',
+					'view-distance=2'
+			].join(System.lineSeparator()) + System.lineSeparator()
+			workingDir smokeWorkingDir
+		}
+	}
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(rootProject.target_java_version)
+	}
+	sourceCompatibility = JavaVersion.toVersion(rootProject.target_java_version)
+	targetCompatibility = JavaVersion.toVersion(rootProject.target_java_version)
+}

@@ -160,12 +160,20 @@ def candidateMinecraftVersionProfiles = listProperty(
 		''
 )
 def validationMinecraftVersionProfiles = (supportedMinecraftVersionProfiles + candidateMinecraftVersionProfiles).unique()
+def smokeTestRequiredMinecraftVersionProfiles = listProperty(
+		'smoke_test_required_minecraft_version_profiles',
+		supportedMinecraftVersionProfiles.join(',')
+)
 def releaseOutputDirectory = layout.buildDirectory.dir("release/${minecraft_version_profile_id}")
 def releaseJarTaskProvider = tasks.named(release_jar_task_name)
 def releaseJarFile = releaseJarTaskProvider.flatMap { it.archiveFile }
 def gradleWrapperExecutable = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
 		? 'gradlew.bat'
 		: './gradlew'
+def useSmokeTestNestedNoDaemon = (findProperty('hcautopsy_smoke_nested_no_daemon') ?: 'true').toString().toBoolean()
+def selectedSmokeProfileFilters = listProperty('hcautopsy_smoke_profiles', '') as Set
+def selectedSmokeGameVersionFilters = listProperty('hcautopsy_smoke_game_versions', '') as Set
+def selectedSmokeInstallSetFilters = listProperty('hcautopsy_smoke_install_sets', '') as Set
 
 def loadVersionProfile = { String profileName ->
 	def profileFile = file("gradle/version-profiles/${profileName}.properties")
@@ -180,6 +188,15 @@ def loadVersionProfile = { String profileName ->
 def profileIdFor = { String profileName, Properties profile ->
 	def value = profile.getProperty('profile_id')
 	return value != null && !value.isBlank() ? value.trim() : profileName
+}
+
+def profileGameVersionsFor = { Properties profile ->
+	def selectedVersion = profile.getProperty('minecraft_version')
+	def value = profile.getProperty('modrinth_game_versions') ?: selectedVersion
+	return value.toString()
+			.split(',')
+			.collect { it.trim() }
+			.findAll { !it.isEmpty() }
 }
 
 def safeTaskSuffix = { String value ->
@@ -218,14 +235,14 @@ def supportedProfileBuildTasks = registerProfileBuildTasks(
 		supportedMinecraftVersionProfiles,
 		'buildMinecraft',
 		'build',
-		'Builds the release jar for supported Minecraft version profile'
+		'Builds and verifies the release jar for supported Minecraft version profile'
 )
 
 def validationProfileBuildTasks = registerProfileBuildTasks(
 		validationMinecraftVersionProfiles,
 		'validateMinecraft',
 		'verification',
-		'Builds the release jar for validation Minecraft version profile'
+		'Builds and verifies the release jar for validation Minecraft version profile'
 )
 
 tasks.register('collectReleaseJar', Copy) {
@@ -241,11 +258,115 @@ tasks.register('collectReleaseJar', Copy) {
 	}
 }
 
+tasks.register('verifyReleaseMetadata') {
+	group = 'verification'
+	description = 'Verifies the active profile release jar metadata and required assets.'
+	dependsOn tasks.named('collectReleaseJar')
+
+	doLast {
+		def releaseJarName = releaseJarFile.get().asFile.name
+		def releaseJar = releaseOutputDirectory.get().file(releaseJarName).asFile
+		if (!releaseJar.isFile()) {
+			throw new GradleException("Missing release jar: ${releaseJar}")
+		}
+		if (modrinth_game_versions.isEmpty()) {
+			throw new GradleException("Profile ${minecraft_version_profile} has no modrinth_game_versions.")
+		}
+
+		def entries = [] as Set
+		def readEntryText = { java.util.zip.ZipFile zip, String entryName ->
+			def entry = zip.getEntry(entryName)
+			if (entry == null) {
+				throw new GradleException("${releaseJar.name} is missing ${entryName}")
+			}
+			zip.getInputStream(entry).withCloseable { stream ->
+				return stream.getText('UTF-8')
+			}
+		}
+
+		def fabricJsonText
+		def mixinJsonText
+		new java.util.zip.ZipFile(releaseJar).withCloseable { zip ->
+			def entryEnumeration = zip.entries()
+			while (entryEnumeration.hasMoreElements()) {
+				entries.add(entryEnumeration.nextElement().name)
+			}
+			fabricJsonText = readEntryText(zip, 'fabric.mod.json')
+			mixinJsonText = readEntryText(zip, 'hc-autopsy.mixins.json')
+		}
+
+		if (fabricJsonText.contains('${') || mixinJsonText.contains('${')) {
+			throw new GradleException("${releaseJar.name} contains unexpanded resource placeholders.")
+		}
+
+		def fabricMetadata = new groovy.json.JsonSlurper().parseText(fabricJsonText)
+		def mixinMetadata = new groovy.json.JsonSlurper().parseText(mixinJsonText)
+		def expectedJavaDependency = ">=${target_java_version}"
+		def expectedMixinCompatibility = "JAVA_${target_java_version}"
+		def expectedLicense = 'All-Rights-Reserved'
+		def bundledLicense = "LICENSE_${project.base.archivesName.get()}".toString()
+
+		if (fabricMetadata.id != 'hc-autopsy') {
+			throw new GradleException("${releaseJar.name} declares mod id ${fabricMetadata.id}, expected hc-autopsy.")
+		}
+		if (fabricMetadata.version != project.version.toString()) {
+			throw new GradleException("${releaseJar.name} declares version ${fabricMetadata.version}, expected ${project.version}.")
+		}
+		if (fabricMetadata.license != expectedLicense) {
+			throw new GradleException("${releaseJar.name} declares license ${fabricMetadata.license}, expected ${expectedLicense}.")
+		}
+		if (fabricMetadata.environment != 'server') {
+			throw new GradleException("${releaseJar.name} declares environment ${fabricMetadata.environment}, expected server.")
+		}
+		if ((fabricMetadata.entrypoints ?: [:]).containsKey('client')) {
+			throw new GradleException("${releaseJar.name} declares a client entrypoint, but HC Autopsy is server-only.")
+		}
+		if (fabricMetadata.depends.fabricloader != ">=${loader_version}") {
+			throw new GradleException("${releaseJar.name} declares Fabric Loader dependency ${fabricMetadata.depends.fabricloader}, expected >=${loader_version}.")
+		}
+		if (fabricMetadata.depends.minecraft != minecraft_dependency) {
+			throw new GradleException("${releaseJar.name} declares Minecraft dependency ${fabricMetadata.depends.minecraft}, expected ${minecraft_dependency}.")
+		}
+		if (fabricMetadata.depends.java != expectedJavaDependency) {
+			throw new GradleException("${releaseJar.name} declares Java dependency ${fabricMetadata.depends.java}, expected ${expectedJavaDependency}.")
+		}
+		if (fabricMetadata.depends['fabric-api'] != '*') {
+			throw new GradleException("${releaseJar.name} declares Fabric API dependency ${fabricMetadata.depends['fabric-api']}, expected *.")
+		}
+		if (!fabricMetadata.icon || !entries.contains(fabricMetadata.icon.toString())) {
+			throw new GradleException("${releaseJar.name} declares missing icon ${fabricMetadata.icon}.")
+		}
+		if (!entries.contains(bundledLicense)) {
+			throw new GradleException("${releaseJar.name} is missing bundled license ${bundledLicense}.")
+		}
+		def mixinConfigs = (fabricMetadata.mixins ?: []).collect { mixin ->
+			mixin instanceof Map ? mixin.config : mixin.toString()
+		}
+		if (!mixinConfigs.contains('hc-autopsy.mixins.json')) {
+			throw new GradleException("${releaseJar.name} does not declare hc-autopsy.mixins.json.")
+		}
+		if (mixinMetadata.compatibilityLevel != expectedMixinCompatibility) {
+			throw new GradleException("${releaseJar.name} declares mixin compatibility ${mixinMetadata.compatibilityLevel}, expected ${expectedMixinCompatibility}.")
+		}
+		if (!(mixinMetadata.mixins ?: []).contains('ServerPlayerMixin')) {
+			throw new GradleException("${releaseJar.name} is missing expected ServerPlayerMixin.")
+		}
+		if ((mixinMetadata.client ?: []).size() > 0) {
+			throw new GradleException("${releaseJar.name} declares client mixins, but HC Autopsy is server-only.")
+		}
+
+		println "Verified release metadata: ${releaseJar}"
+		println "  Minecraft dependency: ${minecraft_dependency}"
+		println "  Java dependency: ${expectedJavaDependency}"
+		println "  Modrinth game versions: ${modrinth_game_versions.join(', ')}"
+	}
+}
+
 tasks.register('buildRelease') {
 	group = 'build'
-	description = 'Builds and collects the active Minecraft version profile release jar.'
+	description = 'Builds, collects, and verifies the active Minecraft version profile release jar.'
 	dependsOn tasks.named('build')
-	dependsOn tasks.named('collectReleaseJar')
+	dependsOn tasks.named('verifyReleaseMetadata')
 }
 
 tasks.register('printVersionProfile') {
@@ -299,6 +420,528 @@ tasks.register('buildValidationVersions') {
 
 	doFirst {
 		println "Validation profiles: ${validationMinecraftVersionProfiles.join(', ')}"
+	}
+}
+
+tasks.register('verifySmokeTestMatrix') {
+	group = 'verification'
+	description = 'Verifies supported profiles have passing smoke-test records and candidate profiles are tracked.'
+
+	doLast {
+		def smokeFile = file('gradle/smoke-tests.json')
+		if (!smokeFile.isFile()) {
+			throw new GradleException("Missing smoke-test matrix: ${smokeFile}")
+		}
+
+		def smokeMatrix = new groovy.json.JsonSlurper().parse(smokeFile)
+		if (smokeMatrix.schema_version != 1) {
+			throw new GradleException("Unsupported smoke-test matrix schema: ${smokeMatrix.schema_version}")
+		}
+		def profilesNode = smokeMatrix.profiles ?: [:]
+		def validStatuses = ['pass', 'pending', 'fail'] as Set
+
+		smokeTestRequiredMinecraftVersionProfiles.each { profileName ->
+			def profile = loadVersionProfile(profileName)
+			def profileId = profileIdFor(profileName, profile)
+			def smokeProfile = profilesNode[profileId]
+			if (!smokeProfile) {
+				throw new GradleException("Smoke-test matrix is missing required profile '${profileId}'.")
+			}
+
+			profileGameVersionsFor(profile).each { gameVersion ->
+				def result = smokeProfile.game_versions ? smokeProfile.game_versions[gameVersion] : null
+				if (!result) {
+					throw new GradleException("Smoke-test matrix is missing required ${profileId} / ${gameVersion}.")
+				}
+				if (!validStatuses.contains(result.status)) {
+					throw new GradleException("Smoke-test matrix has invalid status '${result.status}' for ${profileId} / ${gameVersion}.")
+				}
+				if (result.status != 'pass') {
+					throw new GradleException("Supported profile '${profileId}' cannot publish ${gameVersion}; smoke status is '${result.status}'.")
+				}
+				if (!result.tested_at || !result.method) {
+					throw new GradleException("Passing smoke record for ${profileId} / ${gameVersion} must include tested_at and method.")
+				}
+			}
+		}
+
+		candidateMinecraftVersionProfiles.each { profileName ->
+			def profile = loadVersionProfile(profileName)
+			def profileId = profileIdFor(profileName, profile)
+			def smokeProfile = profilesNode[profileId]
+			if (!smokeProfile) {
+				throw new GradleException("Smoke-test matrix is missing candidate profile '${profileId}'. Add pending records before CI validation.")
+			}
+
+			profileGameVersionsFor(profile).each { gameVersion ->
+				def result = smokeProfile.game_versions ? smokeProfile.game_versions[gameVersion] : null
+				if (!result) {
+					throw new GradleException("Smoke-test matrix is missing candidate ${profileId} / ${gameVersion}. Add a pending/pass/fail record.")
+				}
+				if (!validStatuses.contains(result.status)) {
+					throw new GradleException("Smoke-test matrix has invalid status '${result.status}' for ${profileId} / ${gameVersion}.")
+				}
+				if (result.status == 'pass' && (!result.tested_at || !result.method)) {
+					throw new GradleException("Passing smoke record for ${profileId} / ${gameVersion} must include tested_at and method.")
+				}
+				if (result.status != 'pass') {
+					println "Candidate profile '${profileId}' for Minecraft ${gameVersion} is tracked as '${result.status}' and remains non-publishable."
+				}
+			}
+		}
+	}
+}
+
+def smokeInstallSets = [
+		[
+				id         : 'hc-autopsy-server-only',
+				taskSuffix : 'ServerOnly',
+				launchTask : ':smokelaunch:runServer',
+				passMarker : 'HCAUTOPSY_SERVER_SMOKE_TEST_PASS',
+				description: 'HC Autopsy jar on a dedicated Fabric server'
+		]
+]
+
+def selectedSmokeFiltersConfigured = !selectedSmokeProfileFilters.isEmpty()
+		|| !selectedSmokeGameVersionFilters.isEmpty()
+		|| !selectedSmokeInstallSetFilters.isEmpty()
+
+def filteredSmokeProfiles = { List<String> profiles ->
+	if (selectedSmokeProfileFilters.isEmpty()) {
+		return profiles
+	}
+	return profiles.findAll { profileName ->
+		def profile = loadVersionProfile(profileName)
+		def profileId = profileIdFor(profileName, profile)
+		selectedSmokeProfileFilters.contains(profileName) || selectedSmokeProfileFilters.contains(profileId)
+	}
+}
+
+def filteredSmokeGameVersions = { Properties profile ->
+	def gameVersions = profileGameVersionsFor(profile)
+	if (selectedSmokeGameVersionFilters.isEmpty()) {
+		return gameVersions
+	}
+	return gameVersions.findAll { selectedSmokeGameVersionFilters.contains(it) }
+}
+
+def filteredSmokeInstallSets = { List<Map> installSets ->
+	if (selectedSmokeInstallSetFilters.isEmpty()) {
+		return installSets
+	}
+	return installSets.findAll {
+		selectedSmokeInstallSetFilters.contains(it.id) || selectedSmokeInstallSetFilters.contains(it.taskSuffix)
+	}
+}
+
+def registerSmokeTasks = { List<String> profiles, String taskPrefix, String buildTaskPrefix, boolean applySelectionFilters ->
+	def smokeTasks = []
+	def previousSmokeTask = null
+	def profilesForSmoke = applySelectionFilters ? filteredSmokeProfiles(profiles) : profiles
+	def installSetsForSmoke = applySelectionFilters ? filteredSmokeInstallSets(smokeInstallSets) : smokeInstallSets
+
+	profilesForSmoke.each { profileName ->
+		def profile = loadVersionProfile(profileName)
+		def profileId = profileIdFor(profileName, profile)
+		def releaseJarDirectory = layout.buildDirectory.dir("release/${profileId}")
+		def buildTaskName = profileBuildTaskName(buildTaskPrefix, profileName)
+		def gameVersionsForSmoke = applySelectionFilters ? filteredSmokeGameVersions(profile) : profileGameVersionsFor(profile)
+
+		gameVersionsForSmoke.each { gameVersion ->
+			installSetsForSmoke.each { installSet ->
+				def taskName = "${taskPrefix}${safeTaskSuffix(profileName)}On${safeTaskSuffix(gameVersion)}${installSet.taskSuffix}"
+				def modListFile = layout.buildDirectory.file("smoke-mod-lists/${profileId}/${gameVersion}/${installSet.id}.txt")
+				def smokeLogFile = layout.buildDirectory.file("smoke-logs/${profileId}/${gameVersion}/${installSet.id}.log")
+				def smokeOutput = new ByteArrayOutputStream()
+				def runArguments = [
+						gradleWrapperExecutable,
+						installSet.launchTask,
+						"-Pminecraft_version_profile=${gameVersion}",
+						'-Phcautopsy_smoke_test=true',
+						"-Phcautopsy_smoke_release_profile=${profileId}",
+						"-Phcautopsy_smoke_install_set=${installSet.id}",
+						"-Phcautopsy_smoke_mods=@${modListFile.get().asFile.absolutePath}"
+				]
+				if (useSmokeTestNestedNoDaemon) {
+					runArguments.add('--no-daemon')
+				}
+				runArguments.add('--console=plain')
+
+				def smokeTask = tasks.register(taskName, Exec) {
+					group = 'verification'
+					description = "Launches Minecraft ${gameVersion} dedicated server with ${installSet.description} from profile ${profileId}."
+					dependsOn tasks.named(buildTaskName)
+
+					commandLine(runArguments as String[])
+					standardOutput = smokeOutput
+					errorOutput = smokeOutput
+					ignoreExitValue = true
+
+					doFirst {
+						def releaseDir = releaseJarDirectory.get().asFile
+						def releaseJar = new File(releaseDir, "${project.base.archivesName.get()}-${version}.jar")
+						if (!releaseJar.isFile()) {
+							throw new GradleException("Smoke test ${taskName} is missing release jar: ${releaseJar}")
+						}
+
+						def modList = modListFile.get().asFile
+						modList.parentFile.mkdirs()
+						modList.text = releaseJar.absolutePath + System.lineSeparator()
+					}
+
+					doLast {
+						def outputText = smokeOutput.toString('UTF-8')
+						def logFile = smokeLogFile.get().asFile
+						logFile.parentFile.mkdirs()
+						logFile.text = outputText
+						print outputText
+
+						def exitValue = executionResult.get().exitValue
+						if (exitValue != 0) {
+							throw new GradleException("Smoke test ${taskName} failed with exit code ${exitValue}. Log: ${logFile}")
+						}
+						if (!outputText.contains(installSet.passMarker)) {
+							throw new GradleException("Smoke test ${taskName} did not print ${installSet.passMarker}. Log: ${logFile}")
+						}
+					}
+				}
+
+				if (previousSmokeTask != null) {
+					def predecessor = previousSmokeTask
+					smokeTask.configure {
+						mustRunAfter predecessor
+					}
+				}
+				previousSmokeTask = smokeTask
+				smokeTasks.add(smokeTask)
+			}
+		}
+	}
+
+	return smokeTasks
+}
+
+def supportedServerSmokeTasks = registerSmokeTasks(
+		supportedMinecraftVersionProfiles,
+		'smokeSupportedServerMinecraft',
+		'buildMinecraft',
+		false
+)
+
+def validationServerSmokeTasks = registerSmokeTasks(
+		validationMinecraftVersionProfiles,
+		'smokeValidationServerMinecraft',
+		'validateMinecraft',
+		false
+)
+
+def selectedServerSmokeTasks = registerSmokeTasks(
+		validationMinecraftVersionProfiles,
+		'smokeSelectedServerMinecraft',
+		'validateMinecraft',
+		true
+)
+
+tasks.register('smokeTestValidationServers') {
+	group = 'verification'
+	description = 'Launches exact dedicated Minecraft servers with the packaged release jar for each validation profile/game version.'
+	dependsOn validationServerSmokeTasks
+}
+
+tasks.register('smokeTestValidation') {
+	group = 'verification'
+	description = 'Launches exact dedicated Minecraft servers with the packaged release jar for each validation profile/game version.'
+	dependsOn validationServerSmokeTasks
+}
+
+tasks.register('smokeTestSupportedServers') {
+	group = 'verification'
+	description = 'Launches exact dedicated Minecraft servers with the packaged release jar for supported profiles only.'
+	dependsOn supportedServerSmokeTasks
+}
+
+tasks.register('smokeTestSupported') {
+	group = 'verification'
+	description = 'Launches exact dedicated Minecraft servers with the packaged release jar for supported profiles only.'
+	dependsOn supportedServerSmokeTasks
+}
+
+def validateSelectedSmokeTasks = { List smokeTasks, String scope ->
+	if (!selectedSmokeFiltersConfigured) {
+		throw new GradleException("Set at least one of -Phcautopsy_smoke_profiles, -Phcautopsy_smoke_game_versions, or -Phcautopsy_smoke_install_sets before running ${scope}.")
+	}
+	if (smokeTasks.isEmpty()) {
+		throw new GradleException("Selected smoke filters did not match any ${scope} task.")
+	}
+}
+
+tasks.register('smokeTestSelectedServers') {
+	group = 'verification'
+	description = 'Launches a filtered subset of server smoke tests selected by hcautopsy_smoke_* properties.'
+	dependsOn selectedServerSmokeTasks
+
+	doFirst {
+		validateSelectedSmokeTasks(selectedServerSmokeTasks, 'smokeTestSelectedServers')
+	}
+}
+
+tasks.register('smokeTestSelected') {
+	group = 'verification'
+	description = 'Launches a filtered subset of server smoke tests selected by hcautopsy_smoke_* properties.'
+	dependsOn selectedServerSmokeTasks
+
+	doFirst {
+		validateSelectedSmokeTasks(selectedServerSmokeTasks, 'smokeTestSelected')
+	}
+}
+
+tasks.register('ciValidation') {
+	group = 'verification'
+	description = 'Runs CI validation across supported and candidate version profiles.'
+	dependsOn tasks.named('buildValidationVersions')
+	dependsOn tasks.named('smokeTestValidationServers')
+	dependsOn tasks.named('verifySmokeTestMatrix')
+}
+
+tasks.register('publishValidation') {
+	group = 'verification'
+	description = 'Builds and smoke-tests supported profiles only before Modrinth publishing.'
+	dependsOn tasks.named('buildAllVersions')
+	dependsOn tasks.named('smokeTestSupportedServers')
+	dependsOn tasks.named('verifySmokeTestMatrix')
+}
+
+def modrinthProperty = { String key, String defaultValue ->
+	def value = findProperty(key)
+	return value != null && !value.toString().isBlank() ? value.toString().trim() : defaultValue
+}
+
+def modrinthToken = {
+	def propertyToken = findProperty('modrinth_token')
+	if (propertyToken != null && !propertyToken.toString().isBlank()) {
+		return propertyToken.toString().trim()
+	}
+	def envToken = System.getenv('MODRINTH_TOKEN')
+	return envToken != null && !envToken.isBlank() ? envToken.trim() : null
+}
+
+def modrinthReleaseNotesFile = {
+	def defaultNotesFile = "gradle/release-notes/${mod_version}.md"
+	file(modrinthProperty('modrinth_changelog_file', defaultNotesFile))
+}
+
+def modrinthChangelogText = {
+	def notesFile = modrinthReleaseNotesFile()
+	if (!notesFile.isFile()) {
+		throw new GradleException("Missing Modrinth release notes: ${notesFile}. Add gradle/release-notes/${mod_version}.md or pass -Pmodrinth_changelog_file=<path>.")
+	}
+
+	def notes = notesFile.getText('UTF-8').trim()
+	if (notes.isBlank()) {
+		throw new GradleException("Modrinth release notes file is blank: ${notesFile}")
+	}
+	return notes
+}
+
+def modrinthVersionNumberFor = { String profileId ->
+	def suffixMode = modrinthProperty('modrinth_profile_version_suffix', 'auto')
+	if (!['auto', 'always', 'never'].contains(suffixMode)) {
+		throw new GradleException("modrinth_profile_version_suffix must be auto, always, or never.")
+	}
+	if (suffixMode == 'always' || (suffixMode == 'auto' && supportedMinecraftVersionProfiles.size() > 1)) {
+		return "${mod_version}+mc${profileId}"
+	}
+	return mod_version.toString()
+}
+
+def modrinthUploadPlans = {
+	def projectId = modrinthProperty('modrinth_project_id', 'TODO')
+	def allowPlaceholderProject = (findProperty('modrinth_allow_placeholder_project') ?: 'false').toString().toBoolean()
+	if (projectId.isBlank() || projectId == 'TODO') {
+		if (!allowPlaceholderProject) {
+			throw new GradleException('Missing modrinth_project_id; cannot prepare Modrinth upload. Use -Pmodrinth_allow_placeholder_project=true for dry-run-only plans.')
+		}
+		projectId = 'TODO'
+	}
+
+	def versionType = modrinthProperty('modrinth_version_type', 'release')
+	if (!['release', 'beta', 'alpha'].contains(versionType)) {
+		throw new GradleException("modrinth_version_type must be release, beta, or alpha.")
+	}
+
+	def requestedStatus = modrinthProperty('modrinth_requested_status', 'listed')
+	if (!['listed', 'archived', 'draft', 'unlisted', ''].contains(requestedStatus)) {
+		throw new GradleException("modrinth_requested_status must be listed, archived, draft, unlisted, or blank.")
+	}
+
+	def fabricApiProjectId = modrinthProperty('modrinth_fabric_api_project_id', '')
+	def includeFabricApiDependency = (findProperty('modrinth_include_fabric_api_dependency') ?: 'true').toString().toBoolean()
+	def featured = (findProperty('modrinth_featured') ?: 'false').toString().toBoolean()
+	def changelog = modrinthChangelogText()
+	def plans = []
+
+	supportedMinecraftVersionProfiles.each { profileName ->
+		def profile = loadVersionProfile(profileName)
+		def profileId = profileIdFor(profileName, profile)
+		def gameVersions = profileGameVersionsFor(profile)
+		def releaseJar = layout.buildDirectory
+				.file("release/${profileId}/${project.base.archivesName.get()}-${version}.jar")
+				.get()
+				.asFile
+		if (!releaseJar.isFile()) {
+			throw new GradleException("Missing Modrinth upload jar: ${releaseJar}")
+		}
+
+		def dependencies = []
+		if (includeFabricApiDependency && !fabricApiProjectId.isBlank()) {
+			dependencies.add([
+					project_id     : fabricApiProjectId,
+					dependency_type: 'required'
+			])
+		}
+
+		def versionNumber = modrinthVersionNumberFor(profileId)
+		def data = [
+				name          : "HC Autopsy ${mod_version} for Minecraft ${profileId}",
+				version_number: versionNumber,
+				changelog     : changelog,
+				dependencies  : dependencies,
+				game_versions : gameVersions,
+				version_type  : versionType,
+				loaders       : ['fabric'],
+				featured      : featured,
+				project_id    : projectId,
+				file_parts    : ['file'],
+				primary_file  : 'file'
+		]
+		if (!requestedStatus.isBlank()) {
+			data.requested_status = requestedStatus
+		}
+
+		plans.add([
+				displayName : 'HC Autopsy',
+				profileId   : profileId,
+				gameVersions: gameVersions,
+				jar         : releaseJar,
+				data        : data
+		])
+	}
+
+	return plans
+}
+
+def writeModrinthUploadPlan = { List<Map> plans ->
+	def planFile = layout.buildDirectory.file('modrinth/upload-plan.json').get().asFile
+	planFile.parentFile.mkdirs()
+	def notesFile = modrinthReleaseNotesFile()
+	def printablePlans = plans.collect { plan ->
+		[
+				mod              : plan.displayName,
+				profile_id       : plan.profileId,
+				project_id       : plan.data.project_id,
+				version_number   : plan.data.version_number,
+				version_type     : plan.data.version_type,
+				requested_status : plan.data.requested_status,
+				release_notes    : notesFile.path,
+				game_versions    : plan.gameVersions,
+				loaders          : plan.data.loaders,
+				jar              : plan.jar.absolutePath,
+				dependency_count : plan.data.dependencies.size()
+		]
+	}
+	planFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(printablePlans))
+	println "Wrote Modrinth upload plan: ${planFile}"
+}
+
+def printModrinthUploadPlan = { List<Map> plans ->
+	plans.each { plan ->
+		println "Modrinth plan: ${plan.displayName} ${plan.data.version_number} profile=${plan.profileId} project=${plan.data.project_id} games=${plan.gameVersions.join(',')} jar=${plan.jar.name}"
+	}
+}
+
+def uploadModrinthPlan = { Map plan, String token ->
+	def apiBaseUrl = modrinthProperty('modrinth_api_base_url', 'https://api.modrinth.com/v2').replaceAll('/+$', '')
+	def userAgent = modrinthProperty('modrinth_user_agent', "TempestStudios/hc-autopsy/${mod_version}")
+	def boundary = "----HCAutopsyModrinth${System.currentTimeMillis()}${Math.abs(new Random().nextInt())}"
+	def connection = (java.net.HttpURLConnection) new URL("${apiBaseUrl}/version").openConnection()
+	connection.setRequestMethod('POST')
+	connection.setConnectTimeout(30000)
+	connection.setReadTimeout(120000)
+	connection.setDoOutput(true)
+	connection.setRequestProperty('Authorization', token)
+	connection.setRequestProperty('User-Agent', userAgent)
+	connection.setRequestProperty('Content-Type', "multipart/form-data; boundary=${boundary}")
+
+	connection.outputStream.withCloseable { output ->
+		def writeText = { String text -> output.write(text.getBytes('UTF-8')) }
+		writeText("--${boundary}\r\n")
+		writeText('Content-Disposition: form-data; name="data"\r\n')
+		writeText('Content-Type: application/json\r\n\r\n')
+		writeText(groovy.json.JsonOutput.toJson(plan.data))
+		writeText("\r\n")
+
+		writeText("--${boundary}\r\n")
+		writeText("Content-Disposition: form-data; name=\"file\"; filename=\"${plan.jar.name}\"\r\n")
+		writeText('Content-Type: application/java-archive\r\n\r\n')
+		plan.jar.withInputStream { input -> input.transferTo(output) }
+		writeText("\r\n")
+		writeText("--${boundary}--\r\n")
+	}
+
+	def statusCode = connection.responseCode
+	def responseText = statusCode >= 200 && statusCode < 300
+			? connection.inputStream.getText('UTF-8')
+			: (connection.errorStream != null ? connection.errorStream.getText('UTF-8') : '')
+
+	if (statusCode < 200 || statusCode >= 300) {
+		throw new GradleException("Modrinth upload failed for ${plan.displayName} ${plan.data.version_number} (${statusCode}): ${responseText}")
+	}
+
+	def response = new groovy.json.JsonSlurper().parseText(responseText)
+	println "Uploaded ${plan.displayName} ${plan.data.version_number} to Modrinth version ${response.id}"
+}
+
+tasks.register('prepareModrinthUploads') {
+	group = 'publishing'
+	description = 'Builds, smoke-tests, validates, and writes the Modrinth upload plan for supported profiles.'
+	dependsOn tasks.named('publishValidation')
+
+	doLast {
+		def plans = modrinthUploadPlans()
+		if (plans.isEmpty()) {
+			throw new GradleException('No Modrinth uploads were prepared.')
+		}
+		writeModrinthUploadPlan(plans)
+		printModrinthUploadPlan(plans)
+	}
+}
+
+tasks.register('publishModrinthDryRun') {
+	group = 'publishing'
+	description = 'Runs the supported-profile publish gate and prints the Modrinth uploads without calling the API.'
+	dependsOn tasks.named('prepareModrinthUploads')
+
+	doLast {
+		println 'Modrinth dry run complete. No API upload was performed.'
+	}
+}
+
+tasks.register('publishModrinth') {
+	group = 'publishing'
+	description = 'Runs the supported-profile publish gate and uploads supported release jars to Modrinth.'
+	dependsOn tasks.named('prepareModrinthUploads')
+
+	doLast {
+		if (!(findProperty('modrinth_confirm_publish') ?: 'false').toString().toBoolean()) {
+			throw new GradleException('Real Modrinth publishing requires -Pmodrinth_confirm_publish=true. Use publishModrinthDryRun for a safe test.')
+		}
+
+		def token = modrinthToken()
+		if (token == null) {
+			throw new GradleException('Missing Modrinth token. Set MODRINTH_TOKEN or -Pmodrinth_token=... outside the repo.')
+		}
+
+		modrinthUploadPlans().each { uploadModrinthPlan(it, token) }
 	}
 }
 

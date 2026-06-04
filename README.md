@@ -167,6 +167,24 @@ Build and collect the active profile release jar:
 .\gradlew.bat buildRelease --no-daemon --console=plain
 ```
 
+Run the supported dedicated-server smoke gate:
+
+```powershell
+.\gradlew.bat smokeTestSupportedServers --no-daemon --console=plain
+```
+
+Run a selected smoke launch:
+
+```powershell
+.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11" --no-daemon --console=plain
+```
+
+Dry-run the supported-profile Modrinth upload plan without publishing:
+
+```powershell
+.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain
+```
+
 The current normal jar is written under:
 
 ```text
@@ -179,9 +197,9 @@ Profile release jars are collected under:
 build/release/<profile_id>/
 ```
 
-The planned multi-version pipeline still needs binary runtime checks,
-dedicated-server smoke validation, and guarded Modrinth publishing before
-candidate profiles can be promoted.
+The multi-version pipeline can now build and smoke-test the supported profile.
+Candidate profiles still need dedicated-server smoke validation on every exact
+claimed Minecraft runtime before they can be promoted.
 
 ## Project Docs
 

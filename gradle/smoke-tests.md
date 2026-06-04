@@ -1,6 +1,6 @@
 # Smoke Test Matrix
 
-Smoke automation is planned but not implemented yet.
+Smoke automation is implemented for dedicated Fabric servers.
 
 The future smoke matrix should record launcher smoke-test status for each
 release compatibility profile. A profile is publishable only after the packaged
@@ -35,13 +35,11 @@ Each automated dedicated-server smoke launch should:
 - log a clear pass marker such as `HCAUTOPSY_SERVER_SMOKE_TEST_PASS`
 - exit cleanly
 
-## Planned Install Sets
-
-Initial install sets:
+## Install Sets
 
 - `hc-autopsy-server-only`: jar installed on a dedicated Fabric server
 
-## Planned Commands
+## Commands
 
 ```powershell
 .\gradlew.bat verifySmokeTestMatrix
@@ -55,6 +53,21 @@ Initial install sets:
 ```
 
 Dedicated-server smoke should not require `xvfb`.
+
+The smoke matrix is tracked in:
+
+```text
+gradle/smoke-tests.json
+```
+
+Current supported smoke status:
+
+- `1.21.11`: `pass`
+
+Current candidate smoke status:
+
+- `1.20-1.21.11`: pending exact-version dedicated-server smoke rows
+- `26.1-26.2-pre-3`: pending exact-version dedicated-server smoke rows
 
 Smoke logs should be written under:
 
