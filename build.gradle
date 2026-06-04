@@ -149,6 +149,9 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_${inputs.properties.archivesName}" }
 	}
+	from("LICENSE-GPL-3.0") {
+		rename { "${it}_${inputs.properties.archivesName}" }
+	}
 }
 
 def supportedMinecraftVersionProfiles = listProperty(
@@ -303,8 +306,11 @@ tasks.register('verifyReleaseMetadata') {
 		def mixinMetadata = new groovy.json.JsonSlurper().parseText(mixinJsonText)
 		def expectedJavaDependency = ">=${target_java_version}"
 		def expectedMixinCompatibility = "JAVA_${target_java_version}"
-		def expectedLicense = 'All-Rights-Reserved'
-		def bundledLicense = "LICENSE_${project.base.archivesName.get()}".toString()
+		def expectedLicense = 'LGPL-3.0-or-later'
+		def expectedBundledLicenses = [
+				"LICENSE_${project.base.archivesName.get()}".toString(),
+				"LICENSE-GPL-3.0_${project.base.archivesName.get()}".toString()
+		]
 
 		if (fabricMetadata.id != 'hc-autopsy') {
 			throw new GradleException("${releaseJar.name} declares mod id ${fabricMetadata.id}, expected hc-autopsy.")
@@ -336,8 +342,10 @@ tasks.register('verifyReleaseMetadata') {
 		if (!fabricMetadata.icon || !entries.contains(fabricMetadata.icon.toString())) {
 			throw new GradleException("${releaseJar.name} declares missing icon ${fabricMetadata.icon}.")
 		}
-		if (!entries.contains(bundledLicense)) {
-			throw new GradleException("${releaseJar.name} is missing bundled license ${bundledLicense}.")
+		expectedBundledLicenses.each { licenseEntry ->
+			if (!entries.contains(licenseEntry)) {
+				throw new GradleException("${releaseJar.name} is missing bundled license ${licenseEntry}.")
+			}
 		}
 		def mixinConfigs = (fabricMetadata.mixins ?: []).collect { mixin ->
 			mixin instanceof Map ? mixin.config : mixin.toString()

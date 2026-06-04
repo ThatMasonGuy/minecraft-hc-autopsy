@@ -251,6 +251,6 @@ smoke record.
 
 ## License
 
-The repository currently includes the CC0 1.0 Universal license text in
-`LICENSE`. Fabric metadata should be reconciled with the intended release
-license before publishing.
+HC Autopsy is licensed under `LGPL-3.0-or-later`. The repository includes the
+LGPL text in `LICENSE` and the GPL v3 text referenced by LGPL in
+`LICENSE-GPL-3.0`.

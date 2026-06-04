@@ -5,7 +5,18 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
-No unreleased repo-facing changes yet.
+### Changed
+
+- Updated repository and Fabric metadata licensing to `LGPL-3.0-or-later`.
+- Rewrote the Modrinth project summary and description source copy to match the
+  Lifetime Stat Tracker project-page style.
+- Updated Fabric metadata contact links to the Modrinth project and GitHub
+  source repository.
+- Updated the live Modrinth project title, summary, description, license,
+  source URL, issue URL, and server/client support metadata.
+- Updated GitHub About description, topics, and homepage URL.
+- Rewrote the `v1.0.0` GitHub Release notes in the Lifetime Stat Tracker
+  format, with Modrinth version links and validation workflow links.
 
 ## 1.0.0 - 2026-06-05
 

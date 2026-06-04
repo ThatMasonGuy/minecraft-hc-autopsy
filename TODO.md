@@ -230,7 +230,7 @@ candidate cannot honestly hold.
    - Expand mixin compatibility levels from the active profile.
    - Preserve server-only Fabric metadata: `environment: "server"`, no client
      entrypoint, and no client mixin config.
-   - Reconcile repository license and Fabric metadata before publishing.
+   - Reconciled repository license and Fabric metadata to `LGPL-3.0-or-later`.
 
 6. Compatibility shims. Started.
    - Add only the small adapters needed by compile probes.

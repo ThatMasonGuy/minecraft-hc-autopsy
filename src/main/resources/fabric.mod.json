@@ -3,15 +3,15 @@
 	"id": "hc-autopsy",
 	"version": "${version}",
 	"name": "HC Autopsy",
-	"description": "A Hardcore run postmortem system for Fabric servers. HC Autopsy snapshots every player's full Minecraft stats at the first death of a world (the wipe), stores per-world and lifetime datasets, and aggregates totals across all worlds so you can review any run months later—who wiped it, what happened, and how the server performed overall.",
+	"description": "Capture Hardcore world wipes, full player stat snapshots, and lifetime run history on Fabric servers.",
 	"authors": [
-		"TempestStudios"
+		"Tempest Studios"
 	],
 	"contact": {
-		"homepage": "https://mxn.au",
-		"sources": "https://github.com/ThatMasonGuy"
+		"homepage": "https://modrinth.com/mod/hc-autopsy",
+		"sources": "https://github.com/ThatMasonGuy/minecraft-hc-autopsy"
 	},
-	"license": "All-Rights-Reserved",
+	"license": "LGPL-3.0-or-later",
 	"icon": "assets/hc-autopsy/icon.png",
 	"environment": "server",
 	"entrypoints": {

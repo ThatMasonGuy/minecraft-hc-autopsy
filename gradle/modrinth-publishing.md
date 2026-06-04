@@ -160,3 +160,8 @@ Update this file before changing live Modrinth project metadata. Publishing
 tasks upload version files and per-version changelogs only; they should not
 update project summary, project body, gallery, categories, or other page-level
 metadata.
+
+For local project metadata updates, provide `MODRINTH_TOKEN` from a non-repo
+location such as `.env`, PowerShell environment variables, or a user-level
+secret store. Do not print or commit token values. Save before/after API
+snapshots under ignored `build/modrinth/` artifacts when updating the live page.
