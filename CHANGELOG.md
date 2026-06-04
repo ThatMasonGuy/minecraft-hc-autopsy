@@ -71,6 +71,7 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Changed `/hcautopsy player <name> totals` online lookup to use
   `PlayerList#getPlayerByName`, which is available across the current
   compatibility anchors.
+- Replaced the placeholder Fabric icon with the final HC Autopsy icon.
 
 ### Removed
 
