@@ -1,11 +1,14 @@
 # HC Autopsy
 
-HC Autopsy is a Fabric server mod for Hardcore Minecraft run postmortems.
+HC Autopsy is a server-side Fabric mod for Hardcore Minecraft run postmortems.
 
-It detects the first player death in a run, records the wipe cause, snapshots
-vanilla player stat JSON, stores per-run data, and rolls wiped runs into
-lifetime player and server totals. Optional Discord webhook notifications can
-post a concise wipe summary.
+It treats the first death in a world as a wipe event, captures full player stat
+snapshots, stores run metadata to disk, and builds lifetime aggregates so you
+can answer questions like:
+
+- Who ended the run?
+- How long did the world last?
+- What did the server accomplish across all hardcore attempts?
 
 ## Features
 
@@ -20,7 +23,7 @@ post a concise wipe summary.
 
 ## Supported Environment
 
-Current implementation:
+Current supported profile:
 
 - Minecraft: `1.21.11`
 - Fabric Loader: `0.18.4+`
@@ -50,10 +53,15 @@ Planned migration target:
 On server start, HC Autopsy creates or resumes an active run for the current
 world. The run id is based on the world name and a timestamp.
 
-When a player dies, the server-side death mixin records the wipe cause and marks
-the active run as wiped. After a short delay, HC Autopsy forces online player
-stats to save, reads the world's vanilla stat files, saves per-player snapshots,
-aggregates the run, and updates lifetime totals.
+When a player dies:
+
+1. The run manager confirms an active tracking run exists.
+2. A lock prevents duplicate wipe processing from rapid near-simultaneous
+   deaths.
+3. The run is immediately marked `WIPED` with captured death metadata.
+4. After a short delay, player stat files are captured and persisted.
+5. Run-level and lifetime aggregates are updated.
+6. Optional Discord notification is sent.
 
 Only runs in the `WIPED` state contribute to lifetime totals. If a wiped run is
 continued with `/hcautopsy run continue <reason>`, lifetime totals are
@@ -132,6 +140,12 @@ Files and directories:
 - `lifetime/players/<uuid>.json` - per-player lifetime totals
 - `lifetime/server.json` - server-wide lifetime totals
 
+Run IDs are generated as:
+
+```text
+<sanitized-world-name>__yyyyMMdd-HHmmss
+```
+
 ## Configuration
 
 Generated config:
@@ -143,6 +157,14 @@ Generated config:
   "statSaveDelayMs": 500
 }
 ```
+
+Fields:
+
+- `discordWebhookUrl`: Discord incoming webhook URL. Leave blank to disable
+  actual sends.
+- `discordNotificationsEnabled`: keep `true` when using Discord notifications.
+- `statSaveDelayMs`: delay before stat snapshot capture after wipe is
+  triggered.
 
 Do not commit real Discord or Modrinth tokens. Local secret files such as `.env`
 are intentionally ignored.
@@ -201,17 +223,34 @@ The multi-version pipeline can now build and smoke-test the supported profile.
 Candidate profiles still need dedicated-server smoke validation on every exact
 claimed Minecraft runtime before they can be promoted.
 
+## Project Structure
+
+- `src/main/java/tempeststudios/hcautopsy/HCAutopsy.java` - mod entrypoint and
+  event wiring
+- `src/main/java/tempeststudios/hcautopsy/lifecycle/RunManager.java` - run
+  lifecycle and wipe orchestration
+- `src/main/java/tempeststudios/hcautopsy/mixin/ServerPlayerMixin.java` -
+  server-player death hook
+- `src/main/java/tempeststudios/hcautopsy/persistence/PersistenceManager.java`
+  - disk I/O and aggregates
+- `src/main/java/tempeststudios/hcautopsy/command/CommandRegistry.java` -
+  `/hcautopsy` command tree
+- `src/main/java/tempeststudios/hcautopsy/notification/DiscordNotifier.java` -
+  webhook sender
+
 ## Project Docs
 
 - `AGENTS.md` - fresh-agent workflow, verification ladder, and checkpoint rules
 - `TODO.md` - current state, migration roadmap, and compatibility backlog
 - `CHANGELOG.md` - repo-facing engineering history
 - `COMPATIBILITY.md` - source-read compatibility risk map and profile strategy
-- `gradle/compatibility-release-playbook.md` - reusable compatibility-group pipeline plan
-- `gradle/version-profiles/README.md` - planned profile metadata model
-- `gradle/smoke-tests.md` - planned launcher smoke-test gate
-- `gradle/modrinth-publishing.md` - planned guarded publishing rules
-- `gradle/modrinth-project-pages.md` - source copy for the Modrinth summary and description page
+- `gradle/compatibility-release-playbook.md` - reusable compatibility-group
+  pipeline plan
+- `gradle/version-profiles/README.md` - profile metadata model
+- `gradle/smoke-tests.md` - launcher smoke-test gate
+- `gradle/modrinth-publishing.md` - guarded publishing rules
+- `gradle/modrinth-project-pages.md` - source copy for the Modrinth summary and
+  description page
 
 ## License
 
