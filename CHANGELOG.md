@@ -5,6 +5,10 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+No unreleased repo-facing changes yet.
+
+## 1.0.0 - 2026-06-05
+
 ### Added
 
 - Added `.env` to `.gitignore` so local publishing secrets and Modrinth tokens
@@ -118,3 +122,13 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 - Current Gradle setup builds profile-driven server-only Fabric jars. The
   supported release profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`.
+
+### Release
+
+- Published to Modrinth project `4eBkeUAl` by GitHub Actions workflow run
+  `26956796078`.
+- Published `1.0.0+mc1.20-1.21.11` as Modrinth version `N4AixEjM`.
+- Published `1.0.0+mc26.1-26.2-pre-3` as Modrinth version `KdsBXXNZ`.
+- Tagged the exact publish commit
+  `504a625dff156ac5689a806c991d3fbd677def56` as `v1.0.0`.
+- Created the GitHub Release for `v1.0.0`.

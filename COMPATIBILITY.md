@@ -355,6 +355,11 @@ Local and GitHub Actions evidence from 2026-06-04:
   and `1.21.11`.
 - The same GitHub Actions run passed for `26.1-26.2-pre-3` on Minecraft
   `26.1`, `26.1.1`, `26.1.2`, and `26.2-pre-3`.
+- GitHub Actions Modrinth publish run `26956796078` repeated the supported
+  smoke matrix, prepared the upload plan, and published the two supported
+  profile jars.
+- The published Modrinth versions are `N4AixEjM` for `1.0.0+mc1.20-1.21.11`
+  and `KdsBXXNZ` for `1.0.0+mc26.1-26.2-pre-3`.
 
 The promoted supported profiles have passing dedicated-server smoke rows for
 all exact Minecraft versions they claim.

@@ -1,10 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: smoke-validated compatibility promotion. The preferred
-two-artifact release shape has passing dedicated-server smoke evidence from
-GitHub Actions candidate smoke validation run `26953422031` and is now
-configured as supported. The next gate is a supported-profile Modrinth dry run
-without publishing.
+Current checkpoint: HC Autopsy `1.0.0` is released. The preferred two-artifact
+release shape has passing dedicated-server smoke evidence from GitHub Actions
+candidate smoke validation run `26953422031`, was promoted to supported, and
+was published to Modrinth by workflow run `26956796078`.
 
 ## Project Workflow
 
@@ -131,6 +130,11 @@ Known command limitations:
   `26.2-pre-3`.
 - Promoted `1.20-1.21.11` and `26.1-26.2-pre-3` from candidate profiles to
   supported profiles.
+- Published HC Autopsy `1.0.0` to Modrinth project `4eBkeUAl` with GitHub
+  Actions workflow run `26956796078`.
+- Published Modrinth version `N4AixEjM` for `1.0.0+mc1.20-1.21.11`.
+- Published Modrinth version `KdsBXXNZ` for `1.0.0+mc26.1-26.2-pre-3`.
+- Tagged the exact publish commit as `v1.0.0` and created the GitHub Release.
 
 ## Current Compatibility Conclusion
 
@@ -255,12 +259,13 @@ candidate cannot honestly hold.
     - Upload-plan generation and guarded publish tasks exist.
     - Per-version release notes are required before dry-run or publishing.
     - Only supported profiles are included in upload plans.
-    - Real publishing remains blocked without explicit confirmation and token.
+    - Real publishing is guarded by explicit confirmation and token.
+    - `1.0.0` published successfully through GitHub Actions run `26956796078`.
 
 11. Release promotion.
     - Completed for `1.20-1.21.11` and `26.1-26.2-pre-3`.
-    - Tag the exact publish commit with `v<mod_version>`.
-    - Create one GitHub Release per `mod_version`.
+    - Tagged the exact publish commit with `v1.0.0`.
+    - Created the GitHub Release for `v1.0.0`.
 
 ## Compatibility Risk Surfaces
 
@@ -306,3 +311,13 @@ Before a real release:
 5. Publish through the guarded GitHub Actions workflow.
 6. Tag the exact publish commit.
 7. Create a GitHub Release that links the Modrinth versions.
+
+Current release record:
+
+- `v1.0.0`: published from commit
+  `504a625dff156ac5689a806c991d3fbd677def56`.
+- GitHub Actions publish run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/26956796078`
+- GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.0.0`
+- Modrinth versions: `N4AixEjM` and `KdsBXXNZ`.
