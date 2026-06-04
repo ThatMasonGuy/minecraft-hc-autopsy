@@ -1,9 +1,9 @@
 package tempeststudios.hcautopsy.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,18 +13,18 @@ import tempeststudios.hcautopsy.HCAutopsy;
 /**
  * Mixin to intercept player deaths on the server.
  * 
- * This hooks into onDeath() to detect when a player dies,
+ * This hooks into die() to detect when a player dies,
  * which triggers the wipe detection in HC Autopsy.
  */
-@Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin {
+@Mixin(ServerPlayer.class)
+public abstract class ServerPlayerMixin {
 
     /**
-     * Inject at the head of onDeath to capture death details before any processing.
+     * Inject at the head of die to capture death details before any processing.
      */
-    @Inject(method = "onDeath", at = @At("HEAD"))
-    private void hcautopsy$onDeath(DamageSource damageSource, CallbackInfo ci) {
-        ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
+    @Inject(method = "die", at = @At("HEAD"))
+    private void hcautopsy$die(DamageSource damageSource, CallbackInfo ci) {
+        ServerPlayer player = (ServerPlayer) (Object) this;
 
         // Only process if HC Autopsy is initialized
         if (HCAutopsy.getRunManager() == null) {
@@ -32,16 +32,16 @@ public abstract class ServerPlayerEntityMixin {
         }
 
         // Get the death message
-        Text deathMessage = damageSource.getDeathMessage(player);
+        Component deathMessage = damageSource.getLocalizedDeathMessage(player);
 
         // Extract damage source info
-        String damageSourceType = damageSource.getType().msgId();
+        String damageSourceType = damageSource.getMsgId();
 
         // Extract attacker info if present
         String attackerType = null;
         String attackerName = null;
 
-        Entity attacker = damageSource.getAttacker();
+        Entity attacker = damageSource.getEntity();
         if (attacker != null) {
             attackerType = attacker.getType().toString();
             attackerName = attacker.getName().getString();

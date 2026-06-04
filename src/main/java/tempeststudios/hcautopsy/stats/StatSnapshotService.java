@@ -1,8 +1,8 @@
 package tempeststudios.hcautopsy.stats;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.WorldSavePath;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.LevelResource;
 import tempeststudios.hcautopsy.HCAutopsy;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class StatSnapshotService {
      * Get the path to the stats directory for the current world.
      */
     public Path getStatsDirectory() {
-        return server.getSavePath(WorldSavePath.ROOT).resolve("stats");
+        return server.getWorldPath(LevelResource.PLAYER_STATS_DIR);
     }
 
     /**
@@ -103,8 +103,8 @@ public class StatSnapshotService {
      */
     public Map<UUID, String> captureOnlinePlayerSnapshots() {
         // First, force all online players to save their stats
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            player.getStatHandler().save();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.getStats().save();
         }
 
         // Small delay to ensure file writes complete
@@ -116,10 +116,10 @@ public class StatSnapshotService {
 
         // Now capture only online players
         Map<UUID, String> snapshots = new HashMap<>();
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            String snapshot = captureSnapshot(player.getUuid());
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            String snapshot = captureSnapshot(player.getUUID());
             if (snapshot != null) {
-                snapshots.put(player.getUuid(), snapshot);
+                snapshots.put(player.getUUID(), snapshot);
             }
         }
 
@@ -131,16 +131,16 @@ public class StatSnapshotService {
      *
      * @param player The player to save stats for
      */
-    public void forceStatSave(ServerPlayerEntity player) {
-        player.getStatHandler().save();
+    public void forceStatSave(ServerPlayer player) {
+        player.getStats().save();
     }
 
     /**
      * Force all online players to save their stats immediately.
      */
     public void forceAllStatSaves() {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            player.getStatHandler().save();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.getStats().save();
         }
     }
 
@@ -149,13 +149,13 @@ public class StatSnapshotService {
      */
     public String getWorldName() {
         // First, try to get the level name from save properties (most reliable)
-        String levelName = server.getSaveProperties().getLevelName();
+        String levelName = server.getWorldData().getLevelName();
         if (levelName != null && !levelName.isBlank() && !levelName.equals(".")) {
             return levelName;
         }
 
         // Try to get from the world path
-        Path worldPath = server.getSavePath(WorldSavePath.ROOT);
+        Path worldPath = server.getWorldPath(LevelResource.ROOT);
 
         try {
             // Resolve to absolute path and get the actual folder name

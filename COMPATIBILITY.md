@@ -19,15 +19,16 @@ tests, and passed every exact runtime listed by the profile.
 
 HC Autopsy should be server-only.
 
-The current repo still has Fabric template leftovers:
+The baseline-normalized current build has removed the old Fabric template
+leftovers:
 
-- `fabric.mod.json` declares `environment: "*"`
-- `fabric.mod.json` declares a `client` entrypoint
-- `fabric.mod.json` declares a client-only mixin config
-- `build.gradle` uses `splitEnvironmentSourceSets()` and adds `sourceSets.client`
-- `src/client/java` and `src/client/resources` contain no-op template code
+- `fabric.mod.json` now declares `environment: "server"`
+- `fabric.mod.json` declares only the main entrypoint
+- `fabric.mod.json` declares only the server mixin config
+- `build.gradle` no longer uses `splitEnvironmentSourceSets()`
+- the `src/client` tree and unused template mixin are removed
 
-The migration should remove those pieces and publish server-only metadata:
+Future profile work should preserve this server-only metadata shape:
 
 - `environment: "server"`
 - no `entrypoints.client`
@@ -57,9 +58,9 @@ Confirmed decision: move HC Autopsy away from Yarn mappings and align with the
 Lifetime Stat Tracker donor pipeline's official/Mojang-name strategy.
 
 The donor pipeline already has a `26.x` path that assumes that shape. The
-implementation path is to convert HC Autopsy's shared server-side source to
-official names while transplanting the donor profile pipeline, rather than
-reshaping the donor pipeline back to Yarn.
+current `1.21.11` source has been converted to official names. Future profile
+work should preserve that direction while transplanting the donor profile
+pipeline, rather than reshaping the donor pipeline back to Yarn.
 
 Important current-to-target mapping changes:
 
@@ -102,8 +103,8 @@ against anchor versions including `1.20`, `1.21.10`, `1.21.11`, `26.1.2`, and
 
 ## HCAutopsy API Surface
 
-Current Minecraft and Fabric API touchpoints after the intended official-name
-migration:
+Current Minecraft and Fabric API touchpoints after the official-name
+normalization:
 
 - `ServerLifecycleEvents.SERVER_STARTED`
 - `ServerLifecycleEvents.SERVER_STOPPING`
@@ -224,7 +225,8 @@ Likely shim:
 
 ### Java, Mixin, And Build Lane
 
-Current metadata hardcodes Java 21 and Mixin `JAVA_21`.
+Current metadata still hardcodes Java 21 and Mixin `JAVA_21` because profile
+metadata expansion is not implemented yet.
 
 Expected requirements:
 
@@ -306,10 +308,8 @@ No client smoke gate is planned because the mod is server-only.
 
 ## Immediate Implementation Notes
 
-- Strip client-directed metadata and source during the build/metadata cleanup
-  pass, not as a separate product debate.
-- Convert imports and method names to official/Mojang names while adopting the
-  donor profile pipeline.
+- Preserve the server-only metadata and official/Mojang source naming while
+  adopting the donor profile pipeline.
 - Keep compatibility overlays server-only:
 
 ```text

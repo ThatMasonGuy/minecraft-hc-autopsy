@@ -23,6 +23,23 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   - `gradle/modrinth-project-pages.md`
   - `gradle/release-notes/README.md`
 
+### Changed
+
+- Normalized the current `1.21.11` build to official/Mojang mappings with
+  `loom.officialMojangMappings()`.
+- Changed the current Fabric metadata to server-only by declaring
+  `environment: "server"` and keeping only the main entrypoint and server mixin
+  config.
+- Migrated current Minecraft imports and calls to official-name APIs including
+  `ServerPlayer#die`, `CommandSourceStack`, `Commands`, `Component`,
+  `ChatFormatting`, `LevelResource.PLAYER_STATS_DIR`, and
+  `ServerPlayer#getStats().save()`.
+
+### Removed
+
+- Removed the no-op client entrypoint, client mixin config, client source tree,
+  split client Loom source set, and unused template server mixin.
+
 ### Documented
 
 - Documented that the current repo still targets Minecraft `1.21.11` only.
@@ -53,5 +70,5 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ### Build
 
-- Current Gradle setup builds one Fabric jar for Minecraft `1.21.11` with Java
-  21.
+- Current Gradle setup builds one server-only Fabric jar for Minecraft
+  `1.21.11` with Java 21 and official/Mojang mappings.

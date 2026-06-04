@@ -123,9 +123,9 @@ Examples of major boundaries for this project:
   player death in a run, record the wipe cause, snapshot vanilla stat JSON,
   aggregate run and lifetime totals, expose `/hcautopsy` commands, and send
   optional Discord notifications.
-- Product decision: HC Autopsy should be server-only. Remove the current no-op
-  client entrypoint, client mixin config, client source set, and client smoke
-  assumptions during the metadata/build cleanup pass.
+- Product decision implemented for the current build: HC Autopsy is
+  server-only. Preserve the absence of client entrypoints, client mixin
+  configs, client source sets, and client smoke assumptions.
 - Preserve the on-disk JSON data model, run metadata, lifetime totals, and
   recalculation behavior unless an explicit migration is added and documented.
 - Treat Minecraft version profiles as release compatibility groups, not
@@ -158,10 +158,10 @@ Examples of major boundaries for this project:
 - This mod should need fewer compatibility overlays than client-heavy mods, but
   do not collapse ranges by assumption. Let compile probes and launcher smoke
   tests prove where the API breaks are.
-- Confirmed mapping decision: move HC Autopsy away from Yarn mappings and align
-  with the Lifetime Stat Tracker donor pipeline's official/Mojang-name
-  strategy. Convert shared server source to official names instead of reshaping
-  the donor pipeline around Yarn.
+- Confirmed mapping decision implemented for the current build: HC Autopsy has
+  moved away from Yarn mappings and now aligns with the Lifetime Stat Tracker
+  donor pipeline's official/Mojang-name strategy. Preserve official-name source
+  instead of reshaping the donor pipeline around Yarn.
 - Keep automated validation ahead of Modrinth publishing: compile/build checks,
   release jar metadata checks, and launcher smoke tests must pass for every
   Minecraft version claimed by a compatibility-group profile.

@@ -1,8 +1,8 @@
 package tempeststudios.hcautopsy.lifecycle;
 
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import tempeststudios.hcautopsy.HCAutopsy;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.RunState;
@@ -100,9 +100,9 @@ public class RunManager {
      * Register a player as participating in the current run.
      * Called when players join the server.
      */
-    public void registerPlayer(ServerPlayerEntity player) {
+    public void registerPlayer(ServerPlayer player) {
         if (activeRun != null && activeRun.getState().isTracking()) {
-            activeRun.addParticipant(player.getUuid());
+            activeRun.addParticipant(player.getUUID());
             persistence.saveMetadata(activeRun);
         }
     }
@@ -110,7 +110,7 @@ public class RunManager {
     /**
      * Handle a player death. Returns true if this death caused a wipe.
      */
-    public boolean onPlayerDeath(ServerPlayerEntity player, Text deathMessage, String damageSourceType,
+    public boolean onPlayerDeath(ServerPlayer player, Component deathMessage, String damageSourceType,
                                  String attackerType, String attackerName) {
         // Quick check: is there an active run?
         if (activeRun == null || !activeRun.getState().isTracking()) {
@@ -130,7 +130,7 @@ public class RunManager {
         try {
             // Create wipe cause record
             WipeCause wipeCause = WipeCause.create(
-                    player.getUuid(),
+                    player.getUUID(),
                     player.getName().getString(),
                     deathMessage.getString(),
                     damageSourceType,

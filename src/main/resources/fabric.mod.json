@@ -13,21 +13,14 @@
 	},
 	"license": "All-Rights-Reserved",
 	"icon": "assets/hc-autopsy/icon.png",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
 		"main": [
 			"tempeststudios.hcautopsy.HCAutopsy"
-		],
-		"client": [
-			"tempeststudios.hcautopsy.HCAutopsyClient"
 		]
 	},
 	"mixins": [
-		"hc-autopsy.mixins.json",
-		{
-			"config": "hc-autopsy.client.mixins.json",
-			"environment": "client"
-		}
+		"hc-autopsy.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.18.4",
