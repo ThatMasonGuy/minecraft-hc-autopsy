@@ -1,10 +1,10 @@
 # HC Autopsy TODO
 
-Current checkpoint: server smoke and Modrinth dry-run foundation. The default
-supported profile is still Minecraft `1.21.11`; it now has a passing
-dedicated-server smoke record and a successful local Modrinth upload-plan dry
-run. Candidate profiles remain non-publishable until their exact runtime smoke
-matrix passes.
+Current checkpoint: smoke-validated compatibility promotion. The preferred
+two-artifact release shape has passing dedicated-server smoke evidence from
+GitHub Actions candidate smoke validation run `26953422031` and is now
+configured as supported. The next gate is a supported-profile Modrinth dry run
+without publishing.
 
 ## Project Workflow
 
@@ -19,14 +19,16 @@ matrix passes.
 
 ## Confirmed Current Shape
 
-- Current default source and metadata target Minecraft `1.21.11`.
+- Current default source and metadata target Minecraft `1.21.11` for local
+  development.
 - Current Gradle setup is profile-driven. The default profile is `1.21.11`.
-- `supported_minecraft_version_profiles` currently contains only `1.21.11`.
-- `1.21.11` has a passing dedicated-server smoke record in
-  `gradle/smoke-tests.json`.
-- Preferred candidate profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`.
-  Both currently pass compile and release-jar metadata probes. They still need
-  dedicated-server smoke validation before promotion.
+- `supported_minecraft_version_profiles` currently contains
+  `1.20-1.21.11` and `26.1-26.2-pre-3`.
+- `candidate_minecraft_version_profiles` is intentionally empty after
+  promotion.
+- Supported profiles have passing dedicated-server smoke records in
+  `gradle/smoke-tests.json` for every exact Minecraft runtime they claim.
+- Supported profiles pass compile and release-jar metadata probes.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -117,37 +119,42 @@ Known command limitations:
   `smokeTestSupportedServers`, `smokeTestValidationServers`, and
   `smokeTestSelectedServers`.
 - Added exact smoke runtime profiles for every Minecraft version claimed by
-  the candidate release profiles.
-- Added `gradle/smoke-tests.json` with a passing supported `1.21.11` server
-  smoke record and pending candidate rows.
+  the release profiles.
+- Added `gradle/smoke-tests.json` with passing supported server smoke records
+  for all exact versions claimed by the two release profiles.
 - Added GitHub Actions workflows for fast supported-profile builds, manual
   candidate smoke validation, and guarded Modrinth publish/dry-run validation.
 - Added guarded Modrinth upload-plan tasks and verified
   `publishModrinthDryRun` locally. No Modrinth API upload was performed.
+- Passed GitHub Actions candidate smoke validation run `26953422031` for
+  `1.20` through `1.21.11`, plus `26.1`, `26.1.1`, `26.1.2`, and
+  `26.2-pre-3`.
+- Promoted `1.20-1.21.11` and `26.1-26.2-pre-3` from candidate profiles to
+  supported profiles.
 
 ## Current Compatibility Conclusion
 
-The current supported profile is only `1.21.11`, but the preferred candidate
-release shape has passed compile and release metadata probes:
+The current supported release shape is the preferred two-artifact plan:
 
 - `1.20-1.21.11`
 - `26.1-26.2-pre-3`
 
 The target migration should use compatibility-group profiles rather than one jar
-per exact Minecraft patch. The active candidate list should try the broadest
-honest shape first:
+per exact Minecraft patch. The active supported list now uses the broadest
+honest shape proven by compile, metadata, and launcher smoke validation:
 
-- supported: `1.21.11`
-- compile-proven preferred candidate: `1.20-1.21.11`
-- compile-proven candidate: `26.1-26.2-pre-3`, using source compat group
+- supported: `1.20-1.21.11`
+- supported: `26.1-26.2-pre-3`, using source compat group
   `26.x`
+- candidates: none
 
 Fallback probe profiles `1.20-1.20.4`, `1.20.5-1.21.10`, and
 `1.20.5-1.21.11` exist because we may need narrower evidence anchors. They are
-not recommendations for HC Autopsy unless binary runtime checks or smoke tests
-prove the broad profile cannot honestly hold. Promote a profile to supported
-only after build, metadata verification, binary runtime checks, and launcher
-smoke validation pass for every exact Minecraft runtime listed by the profile.
+not recommendations for HC Autopsy unless future binary runtime checks or smoke
+tests prove the broad profile cannot honestly hold. Promote any future profile
+to supported only after build, metadata verification, binary runtime checks, and
+launcher smoke validation pass for every exact Minecraft runtime listed by the
+profile.
 
 Confirmed mapping decision implemented for the current build: HC Autopsy has
 moved away from Yarn mappings and now aligns with the Lifetime Stat Tracker
@@ -232,27 +239,26 @@ candidate cannot honestly hold.
    - Verifies mod id, version, license, dependencies, icon, server-only
      environment, mixin configs, and expanded placeholders.
 
-8. Smoke launcher automation. Started.
+8. Smoke launcher automation. Completed for the promoted supported profiles.
    - Added the `smokelaunch` module.
    - Added dedicated-server smoke tests as the required launcher gate.
-   - Recorded a passing supported `1.21.11` smoke row.
-   - Candidate rows remain pending until GitHub smoke validation passes.
+   - Recorded passing supported smoke rows for every exact runtime claimed by
+     `1.20-1.21.11` and `26.1-26.2-pre-3`.
 
 9. GitHub Actions workflows. Completed for initial smoke/dry-run gates.
    - Push/PR validation runs supported-profile builds and smoke matrix checks.
-   - Manual candidate smoke validation workflow exists.
+   - Manual candidate smoke validation workflow exists and passed run
+     `26953422031` for the promoted profiles.
    - Guarded manual Modrinth publishing workflow exists with dry-run default.
 
 10. Modrinth publishing automation. Started.
     - Upload-plan generation and guarded publish tasks exist.
     - Per-version release notes are required before dry-run or publishing.
     - Only supported profiles are included in upload plans.
-    - Real publishing remains blocked without explicit confirmation, token, and
-      real Modrinth project id.
+    - Real publishing remains blocked without explicit confirmation and token.
 
 11. Release promotion.
-    - Move candidates to supported only after exact-version launcher smoke
-      passes.
+    - Completed for `1.20-1.21.11` and `26.1-26.2-pre-3`.
     - Tag the exact publish commit with `v<mod_version>`.
     - Create one GitHub Release per `mod_version`.
 

@@ -22,9 +22,10 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   - `gradle/modrinth-publishing.md`
   - `gradle/modrinth-project-pages.md`
   - `gradle/release-notes/README.md`
-- Added Gradle version-profile files for the supported `1.21.11` profile, the
-  preferred broad `1.20-1.21.11` candidate, and fallback candidate/probe
-  compatibility groups:
+- Added Gradle version-profile files for the default development `1.21.11`
+  profile, the supported broad `1.20-1.21.11` profile, the supported
+  `26.1-26.2-pre-3` profile, and fallback candidate/probe compatibility
+  groups:
   - `1.20-1.21.11`
   - `1.20-1.20.4`
   - `1.20.5-1.21.10`
@@ -39,8 +40,9 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   validation, and selected Minecraft profile launches.
 - Added exact smoke runtime profiles for the Minecraft versions claimed by the
   release profiles.
-- Added `gradle/smoke-tests.json` and recorded a passing supported `1.21.11`
-  dedicated-server smoke result.
+- Added `gradle/smoke-tests.json` and recorded passing dedicated-server smoke
+  results for every exact Minecraft runtime claimed by the supported release
+  profiles.
 - Added GitHub Actions workflows for manual candidate smoke validation and
   guarded Modrinth dry-run/publish validation.
 - Added guarded Modrinth upload-plan tasks, `publishValidation`,
@@ -57,7 +59,7 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   resolution.
 - Changed Fabric and Mixin metadata to expand Minecraft, Java, Fabric Loader,
   and Mixin compatibility values from the active profile.
-- Changed the active candidate list to probe the fewest-artifact shape first:
+- Promoted the fewest-artifact shape to the supported release list:
   `1.20-1.21.11` plus `26.1-26.2-pre-3`.
 - Normalized the current `1.21.11` build to official/Mojang mappings with
   `loom.officialMojangMappings()`.
@@ -72,6 +74,7 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   `PlayerList#getPlayerByName`, which is available across the current
   compatibility anchors.
 - Replaced the placeholder Fabric icon with the final HC Autopsy icon.
+- Kept the original icon image tracked as `assets/source/HC_Autopsy.jpg`.
 
 ### Removed
 
@@ -80,7 +83,9 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ### Documented
 
-- Documented that the current repo still targets Minecraft `1.21.11` only.
+- Documented that the default development profile is `1.21.11`, while
+  supported release profiles now target Minecraft `1.20` through
+  `26.2-pre-3`.
 - Documented the proposed compatibility-group profile map for Minecraft `1.20`
   through `26.2-pre-3`.
 - Documented HC Autopsy's current server-side runtime shape, data paths,
@@ -91,12 +96,10 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Documented local source and `javap` compatibility findings for the
   official-name server API surface used by the donor pipeline.
 - Documented that profile builds, smoke launcher automation, and guarded
-  Modrinth publishing are planned but not implemented yet.
-- Documented that the preferred two-artifact candidate shape now passes local
-  compile and release-jar metadata probes while still requiring binary runtime
-  checks and dedicated-server smoke validation before promotion.
-- Documented that candidate profiles remain non-publishable until all exact
-  dedicated-server smoke rows pass.
+  Modrinth publishing are implemented.
+- Documented that the two-artifact supported release shape passes local
+  compile, release-jar metadata probes, and GitHub Actions dedicated-server
+  smoke validation run `26953422031`.
 
 ## 1.0.0 Current Baseline
 
@@ -113,6 +116,5 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ### Build
 
-- Current Gradle setup builds profile-driven server-only Fabric jars. The only
-  supported profile is `1.21.11`; older and `26.x` profiles are candidates
-  until compile probes, metadata checks, and smoke validation prove them.
+- Current Gradle setup builds profile-driven server-only Fabric jars. The
+  supported release profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`.

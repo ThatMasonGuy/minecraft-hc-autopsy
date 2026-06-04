@@ -2,8 +2,7 @@
 
 Modrinth publishing automation is implemented as guarded Gradle tasks plus a
 manual GitHub Actions workflow with dry-run default. Real publishing remains
-blocked until a real Modrinth project id, token, and explicit confirmation are
-provided.
+blocked until a token and explicit confirmation are provided.
 
 ## Publishing Model
 
@@ -18,13 +17,12 @@ Fabric API dependency project id: `P7dR8mSH`.
 When only one supported profile exists, Modrinth `version_number` can be the mod
 version, such as `1.0.0`.
 
-When multiple supported profiles exist, append the profile id to keep Modrinth
+Multiple supported profiles exist, so append the profile id to keep Modrinth
 version entries unique, such as:
 
 ```text
-1.1.0+mc1.21.11
-1.1.0+mc1.20-1.21.11
-1.1.0+mc26.1-26.2-pre-3
+1.0.0+mc1.20-1.21.11
+1.0.0+mc26.1-26.2-pre-3
 ```
 
 ## Gradle Tasks
@@ -92,7 +90,7 @@ The workflow should install required Java toolchains, run supported-profile
 validation, and capture upload plans, release jars, smoke logs, smoke mod lists,
 smoke run directories, and reports as artifacts.
 
-The current local dry run was verified with:
+Run the current local dry run with:
 
 ```powershell
 .\gradlew.bat publishModrinthDryRun --no-daemon --console=plain

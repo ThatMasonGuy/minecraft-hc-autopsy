@@ -23,22 +23,18 @@ can answer questions like:
 
 ## Supported Environment
 
-Current supported profile:
+Supported release profiles:
 
-- Minecraft: `1.21.11`
-- Fabric Loader: `0.18.4+`
+- Minecraft: `1.20` through `1.21.11` as profile `1.20-1.21.11`
+- Minecraft: `26.1`, `26.1.1`, `26.1.2`, and `26.2-pre-3` as profile
+  `26.1-26.2-pre-3`
+- Fabric Loader: profile-derived
 - Fabric API: required
-- Java: `21+`
+- Java: `17+` for `1.20-1.21.11`; `25+` for `26.1-26.2-pre-3`
 - Primary install: dedicated Fabric server
 - Target environment: server-only
 
-Planned migration target:
-
-- Minecraft: `1.20` through `26.2-pre-3`, published as compatibility-group jars
-- Preferred profile plan: `1.20-1.21.11` and `26.1-26.2-pre-3`; both currently
-  pass local compile and release-jar metadata probes
-- Java: `17+` for the preferred `1.20-1.21.11` probe and `25+` for `26.x`;
-  runtime or smoke-test failures may still force a three-artifact fallback
+The default local development profile remains `1.21.11`.
 
 ## Installation
 
@@ -219,9 +215,10 @@ Profile release jars are collected under:
 build/release/<profile_id>/
 ```
 
-The multi-version pipeline can now build and smoke-test the supported profile.
-Candidate profiles still need dedicated-server smoke validation on every exact
-claimed Minecraft runtime before they can be promoted.
+The multi-version pipeline builds, smoke-tests, and dry-runs Modrinth upload
+plans for the supported profiles. Candidate profiles should stay unpublished
+until every exact claimed Minecraft runtime has a passing dedicated-server
+smoke record.
 
 ## Project Structure
 

@@ -8,17 +8,18 @@ model while auditing this mod's server-only API surface.
 
 ## Current Status
 
-HC Autopsy currently has a supported `1.21.11` build profile. The preferred
-candidate shape is `1.20-1.21.11` plus `26.1-26.2-pre-3`, targeting two
-release artifacts. Both preferred candidate profiles now pass local
-`buildRelease` compile probes and generated release-jar metadata checks.
-Fallback donor split profiles still exist for deeper probing, but they are not
-the recommended release shape.
+HC Autopsy now uses the preferred two-artifact supported release shape:
+`1.20-1.21.11` plus `26.1-26.2-pre-3`. Both profiles pass local
+`buildRelease` compile probes, generated release-jar metadata checks, and
+dedicated-server smoke validation on every exact Minecraft runtime they claim.
+GitHub Actions candidate smoke validation run `26953422031` is the promotion
+evidence for the exact-version runtime matrix.
 
-This document is still not a completed runtime compatibility report. Do not
-promote any profile to supported until the exact jar has built, verified
-metadata, passed binary runtime checks, launched in dedicated-server smoke
-tests, and passed every exact runtime listed by the profile.
+Fallback donor split profiles still exist for deeper probing, but they are not
+the recommended release shape. Do not add or promote future profiles until the
+exact jar has built, verified metadata, passed binary runtime checks, launched
+in dedicated-server smoke tests, and passed every exact runtime listed by the
+profile.
 
 ## Product Decision
 
@@ -47,9 +48,9 @@ Use the fewest compatibility-group jars that can honestly support the targeted
 Minecraft range. The donor repo's split was required by that mod; it is not a
 recommendation for HC Autopsy.
 
-Preferred two-artifact shape after local compile and metadata probes:
+Supported two-artifact shape after compile, metadata, and smoke validation:
 
-| Release profile | Compile anchor | Runtime claim after smoke tests | Java | Source compat group |
+| Release profile | Compile anchor | Runtime claim | Java | Source compat group |
 | --- | --- | --- | ---: | --- |
 | `1.20-1.21.11` | `1.20` | `1.20` through `1.21.11` | 17 | `1.20-1.21.11` |
 | `26.1-26.2-pre-3` | `26.2-pre-3` | `26.1`, `26.1.1`, `26.1.2`, `26.2-pre-3` | 25 | `26.x` |
@@ -331,7 +332,7 @@ No client smoke gate is planned because the mod is server-only.
 
 ## Current Probe Evidence
 
-Local build evidence from 2026-06-04:
+Local and GitHub Actions evidence from 2026-06-04:
 
 - `.\gradlew.bat buildRelease "-Pminecraft_version_profile=1.20-1.21.11" --no-daemon --console=plain`
   passed.
@@ -347,14 +348,21 @@ Local build evidence from 2026-06-04:
   passed for the supported `1.21.11` release jar.
 - `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain`
   passed, wrote a local upload plan, and did not call the Modrinth API.
+- GitHub Actions candidate smoke validation run `26953422031` passed for
+  `1.20-1.21.11` on Minecraft `1.20`, `1.20.1`, `1.20.2`, `1.20.3`,
+  `1.20.4`, `1.20.5`, `1.20.6`, `1.21`, `1.21.1`, `1.21.2`, `1.21.3`,
+  `1.21.4`, `1.21.5`, `1.21.6`, `1.21.7`, `1.21.8`, `1.21.9`, `1.21.10`,
+  and `1.21.11`.
+- The same GitHub Actions run passed for `26.1-26.2-pre-3` on Minecraft
+  `26.1`, `26.1.1`, `26.1.2`, and `26.2-pre-3`.
 
-The candidate profiles still have pending dedicated-server smoke rows for the
-exact Minecraft versions they claim. Do not promote them until those rows pass.
+The promoted supported profiles have passing dedicated-server smoke rows for
+all exact Minecraft versions they claim.
 
 ## Immediate Implementation Notes
 
 - Preserve the server-only metadata and official/Mojang source naming while
-  adding the next compile-probe shims.
+  adding any future compile-probe shims.
 - Keep compatibility overlays server-only:
 
 ```text
@@ -365,8 +373,8 @@ src/compat/<compat_group>/main/resources/
 ```
 
 - Add the smallest compatibility helpers that compile probes actually require.
-- Do not publish a profile until its dedicated-server smoke matrix is green for
-  every exact listed game version.
+- Do not publish or add a future profile until its dedicated-server smoke
+  matrix is green for every exact listed game version.
 
 ## Evidence Sources
 

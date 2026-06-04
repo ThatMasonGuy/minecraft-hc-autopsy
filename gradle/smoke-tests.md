@@ -2,9 +2,9 @@
 
 Smoke automation is implemented for dedicated Fabric servers.
 
-The future smoke matrix should record launcher smoke-test status for each
-release compatibility profile. A profile is publishable only after the packaged
-jar has launched on every exact Minecraft version listed by that profile.
+The smoke matrix records launcher smoke-test status for each release
+compatibility profile. A profile is publishable only after the packaged jar has
+launched on every exact Minecraft version listed by that profile.
 
 ## Status Meanings
 
@@ -62,12 +62,12 @@ gradle/smoke-tests.json
 
 Current supported smoke status:
 
-- `1.21.11`: `pass`
+- `1.20-1.21.11`: all exact runtime rows `pass`
+- `26.1-26.2-pre-3`: all exact runtime rows `pass`
 
 Current candidate smoke status:
 
-- `1.20-1.21.11`: pending exact-version dedicated-server smoke rows
-- `26.1-26.2-pre-3`: pending exact-version dedicated-server smoke rows
+- none
 
 Smoke logs should be written under:
 
@@ -83,7 +83,7 @@ build/smoke-run/
 
 ## Promotion Rule
 
-After a candidate profile passes required smoke testing on every version in
-`modrinth_game_versions`, update its matrix records to `pass`. To make that
+After a future candidate profile passes required smoke testing on every version
+in `modrinth_game_versions`, update its matrix records to `pass`. To make that
 profile publishable, move it from `candidate_minecraft_version_profiles` to
 `supported_minecraft_version_profiles`, then run the full release validation.
