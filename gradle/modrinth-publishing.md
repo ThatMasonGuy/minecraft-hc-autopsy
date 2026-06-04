@@ -21,7 +21,7 @@ version entries unique, such as:
 
 ```text
 1.1.0+mc1.21.11
-1.1.0+mc1.20-1.20.4
+1.1.0+mc1.20-1.21.11
 1.1.0+mc26.1-26.2-pre-3
 ```
 

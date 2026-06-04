@@ -32,10 +32,10 @@ Current implementation:
 Planned migration target:
 
 - Minecraft: `1.20` through `26.2-pre-3`, published as compatibility-group jars
-- Initial profile plan: `1.20-1.20.4`, `1.20.5-1.21.10`, `1.21.11`, and
-  `26.1-26.2-pre-3`
-- Java: `17+` for `1.20-1.20.4`, `21+` for `1.20.5-1.21.11`, and `25+` for
-  `26.x`
+- Preferred profile plan: try `1.20-1.21.11` and `26.1-26.2-pre-3` first,
+  splitting only if compile probes, metadata checks, or smoke tests require it
+- Java: `17+` for the preferred `1.20-1.21.11` probe and `25+` for `26.x`;
+  Java/API failures may force a three-artifact fallback
 
 ## Installation
 

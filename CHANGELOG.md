@@ -22,10 +22,13 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   - `gradle/modrinth-publishing.md`
   - `gradle/modrinth-project-pages.md`
   - `gradle/release-notes/README.md`
-- Added Gradle version-profile files for the supported `1.21.11` profile and
-  the first candidate compatibility groups:
+- Added Gradle version-profile files for the supported `1.21.11` profile, the
+  preferred broad `1.20-1.21.11` candidate, and fallback candidate/probe
+  compatibility groups:
+  - `1.20-1.21.11`
   - `1.20-1.20.4`
   - `1.20.5-1.21.10`
+  - `1.20.5-1.21.11`
   - `26.1-26.2-pre-3`
 - Added profile helper tasks: `printVersionProfile`, `listVersionProfiles`,
   `buildRelease`, `buildAllVersions`, and `buildValidationVersions`.
@@ -40,6 +43,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   resolution.
 - Changed Fabric and Mixin metadata to expand Minecraft, Java, Fabric Loader,
   and Mixin compatibility values from the active profile.
+- Changed the active candidate list to probe the fewest-artifact shape first:
+  `1.20-1.21.11` plus `26.1-26.2-pre-3`.
 - Normalized the current `1.21.11` build to official/Mojang mappings with
   `loom.officialMojangMappings()`.
 - Changed the current Fabric metadata to server-only by declaring

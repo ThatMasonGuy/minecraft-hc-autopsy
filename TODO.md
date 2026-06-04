@@ -21,8 +21,12 @@ overlays from `gradle/version-profiles/*.properties`.
 - Current default source and metadata target Minecraft `1.21.11`.
 - Current Gradle setup is profile-driven. The default profile is `1.21.11`.
 - `supported_minecraft_version_profiles` currently contains only `1.21.11`.
-- Candidate profiles exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
-  `26.1-26.2-pre-3`, but they are not proven or publishable yet.
+- Preferred candidate profiles are `1.20-1.21.11` and `26.1-26.2-pre-3`,
+  targeting a two-artifact release if compile probes, metadata checks, binary
+  runtime checks, and smoke tests allow it.
+- Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
+  `1.20.5-1.21.11`. These are not the recommended release shape unless
+  evidence forces a split.
 - The mod id is `hc-autopsy`.
 - Product decision implemented for the current build: HC Autopsy is
   server-only.
@@ -82,8 +86,9 @@ Known command limitations:
   official/Mojang mappings.
 - Verified the normalized current build with
   `.\gradlew.bat clean build --no-daemon --console=plain`.
-- Added version-profile properties for the supported `1.21.11` profile and the
-  first candidate compatibility groups.
+- Added version-profile properties for the supported `1.21.11` profile, the
+  preferred broad `1.20-1.21.11` candidate, the `26.x` candidate, and fallback
+  donor split probe anchors.
 - Updated `settings.gradle` to select the active Loom version from the active
   profile before plugin resolution.
 - Updated `build.gradle` to select the active Minecraft/Fabric/Java/Loom lane,
@@ -99,17 +104,19 @@ Known command limitations:
 The current repo is only proven at Minecraft `1.21.11`.
 
 The target migration should use compatibility-group profiles rather than one jar
-per exact Minecraft patch. Initial profile files now align with the source
-compatibility groups:
+per exact Minecraft patch. The active candidate list should try the broadest
+honest shape first:
 
 - supported: `1.21.11`
-- candidate: `1.20-1.20.4`
-- candidate: `1.20.5-1.21.10`
+- preferred candidate: `1.20-1.21.11`
 - candidate: `26.1-26.2-pre-3`, using source compat group `26.x`
 
-These ranges are not proven for HC Autopsy yet. Promote a profile to supported
-only after build, metadata verification, and launcher smoke validation pass for
-every exact Minecraft runtime listed by the profile.
+Fallback probe profiles `1.20-1.20.4`, `1.20.5-1.21.10`, and
+`1.20.5-1.21.11` exist because we may need narrower evidence anchors. They are
+not recommendations for HC Autopsy unless the broad profile fails. Promote a
+profile to supported only after build, metadata verification, binary runtime
+checks, and launcher smoke validation pass for every exact Minecraft runtime
+listed by the profile.
 
 Confirmed mapping decision implemented for the current build: HC Autopsy has
 moved away from Yarn mappings and now aligns with the Lifetime Stat Tracker
@@ -120,7 +127,9 @@ transplant close to the donor and preserves the expected `26.x` non-remap lane.
 
 Create a single-repo release pipeline that can build, validate, and publish HC
 Autopsy for Minecraft `1.20` through `26.2-pre-3` using the fewest honest
-release artifacts possible.
+release artifacts possible. The preferred outcome is two artifacts:
+`1.20-1.21.11` and `26.1-26.2-pre-3`. A three-artifact fallback is acceptable
+if Java/API boundaries require it.
 
 Each release profile should:
 
@@ -133,14 +142,15 @@ Each release profile should:
 ## Proposed Compatibility Groups
 
 ```text
-src/compat/1.20-1.20.4/
-src/compat/1.20.5-1.21.10/
+src/compat/1.20-1.21.11/
 src/compat/1.21.11/
 src/compat/26.x/
 ```
 
 Keep shared behavior in `src/main/java`. Add server-side compat source only for
-API shapes that cannot compile across the intended range.
+API shapes that cannot compile across the intended range. Use the older donor
+split compat groups only if compile probes prove the broad `1.20-1.21.11`
+candidate cannot honestly hold.
 
 ## Migration Roadmap
 

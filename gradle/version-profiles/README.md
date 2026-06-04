@@ -29,28 +29,31 @@ The current `gradle.properties` model uses:
 ```properties
 minecraft_version_profile=1.21.11
 supported_minecraft_version_profiles=1.21.11
-candidate_minecraft_version_profiles=1.20-1.20.4,1.20.5-1.21.10,26.1-26.2-pre-3
+candidate_minecraft_version_profiles=1.20-1.21.11,26.1-26.2-pre-3
 ```
 
 Only keep a profile supported while it builds, verifies metadata, and has
 passing launcher smoke records for every listed game version.
 
-Candidate profiles should start aligned with source compatibility groups. Split
-a profile only after compile probes, binary runtime checks, dependency metadata,
-or smoke tests prove that one jar cannot honestly cover the proposed range.
+Candidate profiles should start as broad as honestly possible. The preferred
+candidate list is `1.20-1.21.11,26.1-26.2-pre-3`. Donor split profiles such as
+`1.20-1.20.4` and `1.20.5-1.21.10`, plus the cleaner `1.20.5-1.21.11`
+fallback, are probes, not the target shape for HC Autopsy. Split a profile only
+after compile probes, binary runtime checks, dependency metadata, or smoke tests
+prove that one jar cannot honestly cover the proposed range.
 
 ## Profile Fields
 
 ```properties
-profile_id=1.20.5-1.21.10
+profile_id=1.20-1.21.11
 minecraft_version=<proven_compile_anchor>
-minecraft_dependency=>=1.20.5 <=1.21.10
-modrinth_game_versions=1.20.5,1.20.6,1.21,1.21.1,1.21.2,1.21.3,1.21.4,1.21.5,1.21.6,1.21.7,1.21.8,1.21.9,1.21.10
-compat_group=1.20.5-1.21.10
+minecraft_dependency=>=1.20 <=1.21.11
+modrinth_game_versions=1.20,1.20.1,1.20.2,1.20.3,1.20.4,1.20.5,1.20.6,1.21,1.21.1,1.21.2,1.21.3,1.21.4,1.21.5,1.21.6,1.21.7,1.21.8,1.21.9,1.21.10,1.21.11
+compat_group=1.20-1.21.11
 loader_version=0.18.4
 loom_version=1.14-SNAPSHOT
 fabric_api_version=<matching Fabric API version>
-java_version=21
+java_version=17
 unobfuscated_minecraft=false
 ```
 

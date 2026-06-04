@@ -8,9 +8,10 @@ model while auditing this mod's server-only API surface.
 
 ## Current Status
 
-HC Autopsy currently has a supported `1.21.11` build profile. Candidate profile
-files exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and `26.1-26.2-pre-3`, but
-those candidate profiles are not proven or publishable yet.
+HC Autopsy currently has a supported `1.21.11` build profile. The preferred
+candidate shape is `1.20-1.21.11` plus `26.1-26.2-pre-3`, targeting two
+release artifacts if evidence allows it. Fallback donor split profiles also
+exist for compile probing, but they are not the recommended release shape.
 
 This document is a source-read and local bytecode-inspection risk map, not a
 completed compile-probe report. Do not promote any profile to supported until
@@ -41,18 +42,27 @@ Future profile work should preserve this server-only metadata shape:
 ## Executive Recommendation
 
 Use the fewest compatibility-group jars that can honestly support the targeted
-Minecraft range. Start with candidate profiles aligned to known cross-version
-breakpoints from the donor pipeline:
+Minecraft range. The donor repo's split was required by that mod; it is not a
+recommendation for HC Autopsy.
+
+Preferred two-artifact hypothesis:
+
+| Release profile | Compile anchor | Runtime claim after smoke tests | Java | Source compat group |
+| --- | --- | --- | ---: | --- |
+| `1.20-1.21.11` | `1.20` | `1.20` through `1.21.11` | 17 | `1.20-1.21.11` |
+| `26.1-26.2-pre-3` | `26.2-pre-3` | `26.1`, `26.1.1`, `26.1.2`, `26.2-pre-3` | 25 | `26.x` |
+
+Acceptable three-artifact fallback if Java/API boundaries require it:
 
 | Release profile | Compile anchor | Runtime claim after smoke tests | Java | Source compat group |
 | --- | --- | --- | ---: | --- |
 | `1.20-1.20.4` | `1.20` | `1.20`, `1.20.1`, `1.20.2`, `1.20.3`, `1.20.4` | 17 | `1.20-1.20.4` |
-| `1.20.5-1.21.10` | `1.21.10` | `1.20.5` through `1.21.10` | 21 | `1.20.5-1.21.10` |
-| `1.21.11` | `1.21.11` | `1.21.11` | 21 | `1.21.11` |
+| `1.20.5-1.21.11` | `1.21.11` | `1.20.5` through `1.21.11` | 21 | `1.20.5-1.21.11` |
 | `26.1-26.2-pre-3` | `26.2-pre-3` | `26.1`, `26.1.1`, `26.1.2`, `26.2-pre-3` | 25 | `26.x` |
 
-Split or collapse these profiles only after compile probes, binary runtime
-checks, dependency metadata, or smoke tests prove the better map.
+Only fall back to narrower shapes if compile probes, binary runtime checks,
+dependency metadata, or smoke tests prove HC Autopsy really needs it. Prefer
+the three-artifact fallback before the donor-style four-way split.
 
 ## Mapping Strategy
 
@@ -232,8 +242,9 @@ profile.
 
 Expected requirements:
 
-- `1.20-1.20.4` should build with Java 17 and Mixin `JAVA_17`.
-- `1.20.5-1.21.11` should build with Java 21 and Mixin `JAVA_21`.
+- Preferred `1.20-1.21.11` should first be probed as a Java 17 artifact.
+- Fallback `1.20.5-1.21.11` should build with Java 21 and Mixin `JAVA_21` only
+  if the broad Java 17 pre-26 artifact fails honestly.
 - `26.x` likely needs Java 25 and the donor repo's non-remap build lane.
 - `fabric.mod.json` must expand Minecraft, Fabric Loader, Java, Fabric API, and
   server-only environment metadata from the active profile.
@@ -253,24 +264,29 @@ Expected contents:
 - death routing through small compat helpers
 - stat path and stat save calls through direct official APIs or thin wrappers
 
-### `1.20-1.20.4`
+### `1.20-1.21.11`
 
-Purpose: oldest target lane with Java 17.
+Purpose: preferred broad pre-26 lane with Java 17, if one artifact can honestly
+cover Minecraft `1.20` through `1.21.11`.
 
 Potential contents:
 
 - text click/hover helper variant
 - death mixin variant only if `die` descriptor differs
 - Java 17 Mixin metadata
+- any tiny wrappers needed to keep shared server code binary-compatible across
+  the full range
 
-### `1.20.5-1.21.10`
+### Fallback `1.20-1.20.4` And `1.20.5-1.21.11`
 
-Purpose: Java 21 lane before the current `1.21.11` anchor.
+Purpose: fallback lanes only if Java/API boundaries prove the broad
+`1.20-1.21.11` jar cannot honestly cover the full range.
 
 Potential contents:
 
-- text click/hover helper variant if the `1.20.5+` shape differs from the
-  current anchor
+- split text click/hover helpers if the `1.20` and `1.20.5+` shapes cannot be
+  bridged cleanly
+- Java 21 metadata for the newer pre-26 lane
 
 ### `1.21.11`
 

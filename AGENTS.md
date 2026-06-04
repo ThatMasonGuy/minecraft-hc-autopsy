@@ -141,13 +141,13 @@ Examples of major boundaries for this project:
   `candidate_minecraft_version_profiles` list profile file names. Release
   folders and Modrinth version suffixes use each profile's `profile_id`, which
   can be broader than the file name.
-- Initial release profiles should align with the source compat groups:
-  `1.20-1.20.4`, `1.20.5-1.21.10`, `1.21.11`, and `26.1-26.2-pre-3`, mapped
-  onto source compat groups `1.20-1.20.4`, `1.20.5-1.21.10`, `1.21.11`, and
-  `26.x`.
-- Split a release profile away from its source compat group only when compile
-  probes, binary runtime checks, dependency metadata, or smoke tests prove that
-  one jar cannot honestly cover the proposed range.
+- Preferred candidate shape is the fewest honest artifacts, starting with
+  `1.20-1.21.11` plus `26.1-26.2-pre-3`. The donor split profiles
+  `1.20-1.20.4` and `1.20.5-1.21.10`, plus the cleaner three-artifact fallback
+  `1.20.5-1.21.11`, are probe anchors, not a recommendation for this mod.
+- Split a broad release profile only when compile probes, binary runtime
+  checks, dependency metadata, or smoke tests prove that one jar cannot
+  honestly cover the proposed range.
 - For the Minecraft `26.x` lane, start with one broad `26.1-26.2-pre-3`
   candidate mapped to `26.x`. Split it to `26.1-26.1.2` and `26.2-pre-3` only
   if Fabric dependency metadata, compile anchors, or smoke tests require that.
