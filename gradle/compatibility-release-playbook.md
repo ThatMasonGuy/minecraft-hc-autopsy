@@ -19,15 +19,15 @@ smoke-test evidence.
 
 ## What Is Simpler Here
 
-HC Autopsy has one public mod jar and is server-first.
+HC Autopsy has one public mod jar and is server-only.
 
 The first release pipeline can focus on:
 
 - one mod id: `hc-autopsy`
 - one release jar per compatibility group
 - one dedicated-server smoke install set
-- optional client launch smoke only while metadata supports client installs
 - no client/server networking matrix unless new features add networking
+- no client launch or integrated-server smoke gate
 
 ## What Is Still Risky
 
@@ -72,11 +72,8 @@ Suggested layout:
 
 ```text
 src/main/java/
-src/client/java/
 src/compat/<compat_group>/main/java/
-src/compat/<compat_group>/client/java/
 src/compat/<compat_group>/main/resources/
-src/compat/<compat_group>/client/resources/
 ```
 
 Prefer small adapters, wrappers, or replacement mixins over copying complete
@@ -91,8 +88,7 @@ Use a fast local loop and move expensive proof to CI:
 3. Build all supported profiles when changing metadata, overlays, packaging, or
    shared code with cross-version risk.
 4. Focused dedicated-server launcher smoke test for suspected runtime issues.
-5. Optional focused client launcher smoke if the jar remains client-installable.
-6. Full smoke matrix in GitHub Actions before publishing.
+5. Full smoke matrix in GitHub Actions before publishing.
 
 The key invariant is that the packaged release jar launches under every
 Minecraft version listed in `modrinth_game_versions`.

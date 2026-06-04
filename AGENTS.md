@@ -17,7 +17,7 @@ Read these files before making changes:
 8. `gradle/modrinth-project-pages.md` for the Modrinth project summary and
    description-page source copy.
 9. `gradle/compatibility-release-playbook.md` for the portable strategy borrowed
-   from Lifetime Stat Tracker and adapted to this simpler server-first repo.
+   from Lifetime Stat Tracker and adapted to this simpler server-only repo.
 
 If one of these project-process docs is missing, treat the docs foundation as
 the active checkpoint and create or update the missing docs before implementation
@@ -87,14 +87,10 @@ any unrelated user changes.
 - Keep the normal push/PR workflow fast. The expensive matrix should live in a
   manual GitHub Actions workflow before publishing.
 - For this repo, dedicated-server smoke testing is the primary invariant because
-  HC Autopsy is server-first: the packaged jar must launch on every exact
+  HC Autopsy is server-only: the packaged jar must launch on every exact
   Minecraft version listed in its profile metadata, initialize the server
   entrypoint, register `/hcautopsy`, create or resume run state, and shut down
   cleanly.
-- If the mod metadata continues to support client environments, keep a minimal
-  client launch smoke test as a metadata and Mixin sanity check. If a later
-  implementation makes the mod server-only, document that decision and adjust
-  the smoke matrix and Fabric metadata together.
 - `ciValidation` and `publishValidation` should include dedicated-server launch
   smoke once the smoke tasks exist. Use focused selected smoke tasks for local
   checks and aggregate validation before publishing.
@@ -123,12 +119,13 @@ Examples of major boundaries for this project:
 - Keep HC Autopsy as one public mod jar unless compile probes, binary runtime
   checks, dependency metadata, or smoke tests prove that separate artifacts are
   required.
-- Preserve the server-first Hardcore postmortem workflow: detect the first
+- Preserve the server-only Hardcore postmortem workflow: detect the first
   player death in a run, record the wipe cause, snapshot vanilla stat JSON,
   aggregate run and lifetime totals, expose `/hcautopsy` commands, and send
   optional Discord notifications.
-- Treat the current client entrypoint as a no-op compatibility surface until an
-  explicit product decision removes it or gives it real behavior.
+- Product decision: HC Autopsy should be server-only. Remove the current no-op
+  client entrypoint, client mixin config, client source set, and client smoke
+  assumptions during the metadata/build cleanup pass.
 - Preserve the on-disk JSON data model, run metadata, lifetime totals, and
   recalculation behavior unless an explicit migration is added and documented.
 - Treat Minecraft version profiles as release compatibility groups, not
@@ -161,16 +158,19 @@ Examples of major boundaries for this project:
 - This mod should need fewer compatibility overlays than client-heavy mods, but
   do not collapse ranges by assumption. Let compile probes and launcher smoke
   tests prove where the API breaks are.
+- Confirmed mapping decision: move HC Autopsy away from Yarn mappings and align
+  with the Lifetime Stat Tracker donor pipeline's official/Mojang-name
+  strategy. Convert shared server source to official names instead of reshaping
+  the donor pipeline around Yarn.
 - Keep automated validation ahead of Modrinth publishing: compile/build checks,
   release jar metadata checks, and launcher smoke tests must pass for every
   Minecraft version claimed by a compatibility-group profile.
 - Keep `CHANGELOG.md` as the broad repo history. Keep Modrinth-facing release
   notes focused, version-specific, and user-facing in `gradle/release-notes/`.
-- Critical compatibility surfaces are `ServerPlayerEntity#onDeath`,
-  `DamageSource` death-message and attacker APIs, player UUID/name access,
+- Critical compatibility surfaces are official-name `ServerPlayer#die`,
+  `DamageSource` death-message/source/attacker APIs, player UUID/name access,
   server lifecycle events, server play connection events, server command
-  registration, `ServerCommandSource` permission checks, text click/hover style
-  APIs, `MinecraftServer` save-path and save-properties APIs, `WorldSavePath`,
-  stat handler saves, Mixin compatibility levels, Fabric metadata expansion,
-  the optional no-op client entrypoint, and the Minecraft `26.x` Java/non-remap
-  lane.
+  registration, `CommandSourceStack` permission checks, text click/hover style
+  APIs, `MinecraftServer` world-path and world-data APIs, `LevelResource`,
+  stat saves, Mixin compatibility levels, Fabric metadata expansion, and the
+  Minecraft `26.x` Java/non-remap lane.

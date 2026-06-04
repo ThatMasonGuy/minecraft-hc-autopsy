@@ -1,7 +1,8 @@
 # HC Autopsy TODO
 
-Current checkpoint: documentation foundation for a multi-version compatibility
-pipeline. The repo still builds a single Minecraft `1.21.11` jar.
+Current checkpoint: documentation and compatibility audit foundation for a
+server-only multi-version compatibility pipeline. The repo still builds a
+single Minecraft `1.21.11` jar.
 
 ## Project Workflow
 
@@ -19,8 +20,10 @@ pipeline. The repo still builds a single Minecraft `1.21.11` jar.
 - Current source and metadata target Minecraft `1.21.11`.
 - Current Gradle setup is a compact single-project Fabric Loom build.
 - The mod id is `hc-autopsy`.
-- The primary runtime is server-side. `fabric.mod.json` currently declares
-  `environment: "*"` and includes a no-op client entrypoint.
+- Product decision: HC Autopsy should be server-only.
+- Current metadata still declares `environment: "*"`, includes a no-op client
+  entrypoint, and includes a client mixin config. These are migration cleanup
+  targets, not product requirements.
 - Server initialization loads config, initializes persistence, creates the
   Discord notifier, registers `/hcautopsy`, and creates or resumes a run on
   `ServerLifecycleEvents.SERVER_STARTED`.
@@ -65,6 +68,8 @@ Known command limitations:
 - Added `AGENTS.md` with checkpoint, verification, and release-process rules
   adapted from Lifetime Stat Tracker.
 - Added this documentation foundation for the upcoming compatibility migration.
+- Recorded the server-only product decision and the local compatibility audit
+  findings before Gradle/source migration work.
 
 ## Current Compatibility Conclusion
 
@@ -82,6 +87,13 @@ source compatibility groups:
 These ranges are not proven for HC Autopsy yet. Promote a profile to supported
 only after build, metadata verification, and launcher smoke validation pass for
 every exact Minecraft runtime listed by the profile.
+
+Confirmed mapping decision: move HC Autopsy away from Yarn mappings and align
+with the Lifetime Stat Tracker donor pipeline's official/Mojang-name strategy.
+This keeps the pipeline transplant close to the donor and preserves the
+expected `26.x` non-remap lane. The next implementation pass should convert HC
+Autopsy's shared server source to official names rather than adapting the donor
+pipeline back to Yarn.
 
 ## Migration Goal
 
@@ -106,8 +118,8 @@ src/compat/1.21.11/
 src/compat/26.x/
 ```
 
-Keep shared behavior in `src/main/java` and `src/client/java`. Add compat
-source only for API shapes that cannot compile across the intended range.
+Keep shared behavior in `src/main/java`. Add server-side compat source only for
+API shapes that cannot compile across the intended range.
 
 ## Migration Roadmap
 
@@ -132,6 +144,8 @@ source only for API shapes that cannot compile across the intended range.
 4. Metadata expansion.
    - Expand `fabric.mod.json` dependencies from the active profile.
    - Expand mixin compatibility levels from the active profile.
+   - Change Fabric metadata to server-only: `environment: "server"`, no client
+     entrypoint, and no client mixin config.
    - Reconcile repository license and Fabric metadata before publishing.
 
 5. Compatibility shims.
@@ -146,8 +160,7 @@ source only for API shapes that cannot compile across the intended range.
 
 7. Smoke launcher automation.
    - Add a smoke-launch module.
-   - Add dedicated-server smoke tests first.
-   - Keep a minimal client smoke test if the mod remains `environment: "*"`.
+   - Add dedicated-server smoke tests as the required launcher gate.
    - Record smoke status before promoting any profile to supported.
 
 8. GitHub Actions workflows.
@@ -168,24 +181,25 @@ source only for API shapes that cannot compile across the intended range.
 
 ## Compatibility Risk Surfaces
 
-- `ServerPlayerEntityMixin` injects into `ServerPlayerEntity#onDeath`.
-- `DamageSource#getDeathMessage`, `DamageSource#getType`, `DamageType#msgId`,
-  `DamageSource#getAttacker`, entity type stringification, and text APIs may
-  drift.
+- Current Yarn source uses `ServerPlayerEntity#onDeath`; official-name source
+  should target `ServerPlayer#die(DamageSource)`.
+- `DamageSource#getLocalizedDeathMessage`, `DamageSource#getMsgId`,
+  `DamageSource#getEntity`, entity type stringification, and text APIs are the
+  relevant official-name death-detail surface.
 - `ServerLifecycleEvents.SERVER_STARTED` and `SERVER_STOPPING` drive run
   lifecycle.
 - `ServerPlayConnectionEvents.JOIN` tracks participating players.
-- `CommandRegistrationCallback`, `CommandManager`, `ServerCommandSource`, text
+- `CommandRegistrationCallback`, `Commands`, `CommandSourceStack`, text
   click/hover events, and permission checks may drift.
-- `MinecraftServer#getSavePath(WorldSavePath.ROOT)` and
-  `server.getSaveProperties().getLevelName()` drive stats and world identity.
-- `ServerPlayerEntity#getStatHandler().save()` must remain callable or be
-  wrapped.
+- `MinecraftServer#getWorldPath(LevelResource.PLAYER_STATS_DIR)` and
+  `server.getWorldData().getLevelName()` should drive stats and world identity
+  in official-name source.
+- `ServerPlayer#getStats().save()` should remain callable or be wrapped.
 - Mixin config currently hardcodes `JAVA_21`.
 - `fabric.mod.json` currently declares `minecraft: ~1.21.11`, `java: >=21`,
   `fabricloader: >=0.18.4`, and `environment: "*"`.
-- The current client entrypoint and client mixin config are no-op template
-  leftovers but still affect metadata and smoke validation.
+- Current no-op client entrypoint, client mixin config, and `src/client` tree
+  should be removed when the server-only metadata pass lands.
 - The Minecraft `26.x` lane may require Java 25 and the non-remap Loom pattern
   borrowed from the donor repo.
 
@@ -197,8 +211,7 @@ source only for API shapes that cannot compile across the intended range.
   `/hcautopsy player <name> totals`.
 - Decide whether operator players should be able to run
   `/hcautopsy run continue <reason>`.
-- Decide whether the mod should remain `environment: "*"` or become
-  server-only.
+- Strip client-directed template code and metadata so the mod is server-only.
 - Remove template example mixins if they are confirmed unused.
 - Reconcile `LICENSE` with Fabric metadata before publishing.
 - Document any data migration if run metadata or lifetime stat formats change.

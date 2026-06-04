@@ -103,10 +103,7 @@ Compatibility-specific code should live under:
 ```text
 src/compat/<compat_group>/main/java/
 src/compat/<compat_group>/main/resources/
-src/compat/<compat_group>/client/java/
-src/compat/<compat_group>/client/resources/
 ```
 
-Keep shared behavior in `src/main/java` and `src/client/java`. Add
-compatibility sources only for target-specific APIs that cannot compile across
-the intended range.
+Keep shared behavior in `src/main/java`. Add compatibility sources only for
+target-specific server APIs that cannot compile across the intended range.

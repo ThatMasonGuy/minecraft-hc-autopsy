@@ -48,6 +48,5 @@ Install Fabric Loader, Fabric API, and the HC Autopsy jar that matches your
 Minecraft version.
 
 HC Autopsy is designed for server-side use. Install it in the server `mods`
-folder. The current build metadata also allows a client launch, but the client
-entrypoint is only a compatibility placeholder.
+folder. It does not need to be installed on players' clients.
 ```

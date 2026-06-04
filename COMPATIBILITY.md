@@ -4,16 +4,36 @@ Research date: 2026-06-04
 
 Scope: HC Autopsy source compatibility planning from Minecraft `1.20` through
 `26.2-pre-3`, using the Lifetime Stat Tracker pipeline as the release/profile
-model but auditing this mod's own server-first API surface.
+model while auditing this mod's server-only API surface.
 
 ## Current Status
 
 HC Autopsy currently builds for Minecraft `1.21.11` only.
 
-This document is a source-read risk map, not a completed compile-probe report.
-Do not promote any profile to supported until the exact jar has built, verified
-metadata, launched in smoke tests, and passed every exact runtime listed by the
-profile.
+This document is a source-read and local bytecode-inspection risk map, not a
+completed compile-probe report. Do not promote any profile to supported until
+the exact jar has built, verified metadata, launched in dedicated-server smoke
+tests, and passed every exact runtime listed by the profile.
+
+## Product Decision
+
+HC Autopsy should be server-only.
+
+The current repo still has Fabric template leftovers:
+
+- `fabric.mod.json` declares `environment: "*"`
+- `fabric.mod.json` declares a `client` entrypoint
+- `fabric.mod.json` declares a client-only mixin config
+- `build.gradle` uses `splitEnvironmentSourceSets()` and adds `sourceSets.client`
+- `src/client/java` and `src/client/resources` contain no-op template code
+
+The migration should remove those pieces and publish server-only metadata:
+
+- `environment: "server"`
+- no `entrypoints.client`
+- no client mixin config
+- no client source set
+- no client launcher smoke gate
 
 ## Executive Recommendation
 
@@ -31,29 +51,79 @@ breakpoints from the donor pipeline:
 Split or collapse these profiles only after compile probes, binary runtime
 checks, dependency metadata, or smoke tests prove the better map.
 
+## Mapping Strategy
+
+Confirmed decision: move HC Autopsy away from Yarn mappings and align with the
+Lifetime Stat Tracker donor pipeline's official/Mojang-name strategy.
+
+The donor pipeline already has a `26.x` path that assumes that shape. The
+implementation path is to convert HC Autopsy's shared server-side source to
+official names while transplanting the donor profile pipeline, rather than
+reshaping the donor pipeline back to Yarn.
+
+Important current-to-target mapping changes:
+
+| Current Yarn surface | Official-name target |
+| --- | --- |
+| `ServerPlayerEntity` | `ServerPlayer` |
+| `ServerPlayerEntity#onDeath(DamageSource)` | `ServerPlayer#die(DamageSource)` |
+| `ServerCommandSource` | `CommandSourceStack` |
+| `CommandManager` | `Commands` |
+| `Text` | `Component` |
+| `MutableText` | `MutableComponent` |
+| `WorldSavePath` | `LevelResource` |
+| `player.getStatHandler().save()` | `player.getStats().save()` |
+
+This is the largest planning consequence from the audit. The APIs themselves
+look fairly stable once viewed through official names; the mapping mismatch is
+the part that would make a naive pipeline copy painful.
+
+## Local Audit Findings
+
+Local inspection covered current HC Autopsy source, donor source/profile files,
+cached Minecraft jars, and cached Fabric API jars. `javap` checks were run
+against anchor versions including `1.20`, `1.21.10`, `1.21.11`, `26.1.2`, and
+`26.2-pre-3` where local artifacts were available.
+
+| Surface | Finding | Planning consequence |
+| --- | --- | --- |
+| Death mixin target | Official `ServerPlayer#die(DamageSource)` exists across inspected anchors. | A shared official-name mixin may be enough unless compile probes expose descriptor drift. |
+| Death message | `DamageSource#getLocalizedDeathMessage(LivingEntity)` exists across inspected anchors. | Prefer the official method instead of Yarn `getDeathMessage`. |
+| Damage id | `DamageSource#getMsgId()` exists across inspected anchors. | Prefer this over `getType().msgId()` for shared code. |
+| Attacker/source entity | `DamageSource#getEntity()` and `getDirectEntity()` exist across inspected anchors. | Use `getEntity()` for the attacker semantics closest to current Yarn `getAttacker()`. |
+| Stat save | `ServerPlayer#getStats().save()` exists across inspected anchors. | A tiny wrapper is optional, but full overlays do not look necessary yet. |
+| Stats path | `MinecraftServer#getWorldPath(LevelResource.PLAYER_STATS_DIR)` exists across inspected anchors. | Prefer this over resolving `ROOT/stats` manually. |
+| World name | `MinecraftServer#getWorldData().getLevelName()` exists across inspected anchors. | Official-name source can keep the same behavior. |
+| Server directory | `MinecraftServer#getServerDirectory()` changes from `File` in `1.20` to `Path` later. | Avoid it for stats paths; use donor-style path normalization only if needed elsewhere. |
+| Fabric lifecycle | `SERVER_STARTED` and `SERVER_STOPPING` are present across inspected Fabric API anchors. | Direct registration is probably fine. |
+| Fabric join event | `ServerPlayConnectionEvents.JOIN` is present across inspected Fabric API anchors. | Direct registration is probably fine. |
+| Command registration | `CommandRegistrationCallback.register(dispatcher, registryAccess, environment)` is stable in inspected anchors. | Official-name command source imports are the bigger change. |
+| Text click/hover events | `1.20` uses class constructors; `1.21.11+` and `26.x` use newer interface/subtype shapes. | Add `TextEventCompat` or initially remove clickable run-list entries. |
+
 ## HCAutopsy API Surface
 
-Current Minecraft and Fabric API touchpoints:
+Current Minecraft and Fabric API touchpoints after the intended official-name
+migration:
 
 - `ServerLifecycleEvents.SERVER_STARTED`
 - `ServerLifecycleEvents.SERVER_STOPPING`
 - `ServerPlayConnectionEvents.JOIN`
 - `CommandRegistrationCallback`
-- `CommandManager`
-- `ServerCommandSource`
-- `ClickEvent`, `HoverEvent`, `MutableText`, `Text`, and `Formatting`
-- `ServerPlayerEntity`
-- `ServerPlayerEntity#onDeath` mixin target
+- `Commands`
+- `CommandSourceStack`
+- `ClickEvent`, `HoverEvent`, `MutableComponent`, `Component`, and `ChatFormatting`
+- `ServerPlayer`
+- `ServerPlayer#die` mixin target
 - `DamageSource`
-- `DamageSource#getDeathMessage`
-- `DamageSource#getType().msgId()`
-- `DamageSource#getAttacker`
+- `DamageSource#getLocalizedDeathMessage`
+- `DamageSource#getMsgId`
+- `DamageSource#getEntity`
 - `Entity#getType`
 - `Entity#getName`
 - `MinecraftServer`
-- `MinecraftServer#getSavePath(WorldSavePath.ROOT)`
-- `server.getSaveProperties().getLevelName()`
-- `ServerPlayerEntity#getStatHandler().save()`
+- `MinecraftServer#getWorldPath(LevelResource.PLAYER_STATS_DIR)`
+- `MinecraftServer#getWorldData().getLevelName()`
+- `ServerPlayer#getStats().save()`
 - Fabric Loader config directory lookup
 - Mixin compatibility levels
 - Fabric metadata dependency ranges
@@ -62,25 +132,24 @@ Current Minecraft and Fabric API touchpoints:
 
 ### Death Detection
 
-Current code injects:
+Target official-name mixin:
 
 ```java
-@Inject(method = "onDeath", at = @At("HEAD"))
-private void hcautopsy$onDeath(DamageSource damageSource, CallbackInfo ci)
+@Inject(method = "die", at = @At("HEAD"))
+private void hcautopsy$die(DamageSource damageSource, CallbackInfo ci)
 ```
 
 Risk:
 
-- `ServerPlayerEntity#onDeath` method descriptor may drift.
-- `DamageSource` death-message, type, and attacker APIs may drift.
-- Text and entity display APIs may change descriptors.
+- The target method descriptor must be compile-probed in every source group.
+- Death-message, source-id, and attacker extraction should be centralized so
+  any future drift is isolated.
 
 Likely shim:
 
-- Keep wipe routing shared.
-- Add source compat mixins only where the target method descriptor changes.
-- Add a small `DamageSourceCompat` helper if death-message or source-id access
-  changes across ranges.
+- `DamageSourceCompat` with methods for death message, damage id, attacker type,
+  and attacker name. It may be a thin wrapper around stable official calls at
+  first.
 
 ### Server Lifecycle And Joins
 
@@ -88,7 +157,8 @@ Current code uses Fabric lifecycle and connection callbacks directly.
 
 Risk:
 
-- Fabric event class names or callback signatures may drift in `26.x`.
+- Fabric event class names or callback signatures may still drift in untested
+  `26.x` artifacts.
 
 Likely shim:
 
@@ -102,49 +172,55 @@ and console-only permission checks.
 
 Risk:
 
-- Command builder classes and text event constructors can drift.
-- `ClickEvent.RunCommand` and `HoverEvent.ShowText` shapes may differ across
-  the target range.
-- Server permission checks may need descriptor-safe helpers.
+- Command source imports change during the official-name migration.
+- Click and hover event construction differs between older and newer anchors.
+- Operator-player permission checks should not be broadened until the correct
+  version-safe server API is verified.
 
 Likely shim:
 
-- Add `ServerCommandCompat.literal(...)`, `argument(...)`, text event helpers,
-  or permission helpers only if compile probes require them.
+- `TextEventCompat` for clickable/hoverable run-list entries.
+- `ServerPermissionCompat` if player operators are allowed to continue runs
+  later.
+- If `TextEventCompat` is not worth the first implementation pass, keep run
+  list entries plain text and restore clickability after profile builds pass.
 
 ### Stat Snapshot Paths
 
-Current code resolves:
+Target official-name code should resolve:
 
 ```java
-server.getSavePath(WorldSavePath.ROOT).resolve("stats")
+server.getWorldPath(LevelResource.PLAYER_STATS_DIR)
 ```
 
 Risk:
 
-- Save path or world save path APIs may drift.
-- `getSaveProperties().getLevelName()` may drift.
+- Save-path APIs appear stable in inspected anchors, but smoke tests should
+  still verify that stat JSON is read from the correct world.
 
 Likely shim:
 
-- Add `ServerPathCompat` to normalize world root and world display name if
-  direct calls do not compile or smoke tests show bad world ids.
+- `ServerPathCompat` only if compile probes or smoke tests prove direct calls
+  are not enough. The donor repo already has a reflective path-normalization
+  pattern if `getServerDirectory()` is needed for a fallback.
 
 ### Stat Saving
 
-Current code forces:
+Target official-name code should force:
 
 ```java
-player.getStatHandler().save()
+player.getStats().save()
 ```
 
 Risk:
 
-- Player stat handler accessor or save method may drift.
+- The inspected anchors expose the same call, but this should still be
+  compile-probed in each profile.
 
 Likely shim:
 
-- Add `PlayerStatsCompat.forceSave(ServerPlayerEntity player)` if needed.
+- `PlayerStatsCompat.forceSave(ServerPlayer player)` if a future anchor breaks
+  the direct call.
 
 ### Java, Mixin, And Build Lane
 
@@ -155,10 +231,23 @@ Expected requirements:
 - `1.20-1.20.4` should build with Java 17 and Mixin `JAVA_17`.
 - `1.20.5-1.21.11` should build with Java 21 and Mixin `JAVA_21`.
 - `26.x` likely needs Java 25 and the donor repo's non-remap build lane.
-- `fabric.mod.json` must expand Minecraft, Fabric Loader, Java, and Fabric API
-  metadata from the active profile.
+- `fabric.mod.json` must expand Minecraft, Fabric Loader, Java, Fabric API, and
+  server-only environment metadata from the active profile.
 
 ## Source Compat Group Plan
+
+### Shared Server Source
+
+Purpose: all behavior that appears stable once converted to official names.
+
+Expected contents:
+
+- main mod entrypoint
+- lifecycle and join registration
+- command registration and handlers
+- run manager, persistence, aggregation, config, notification, and data models
+- death routing through small compat helpers
+- stat path and stat save calls through direct official APIs or thin wrappers
 
 ### `1.20-1.20.4`
 
@@ -166,24 +255,22 @@ Purpose: oldest target lane with Java 17.
 
 Potential contents:
 
-- death mixin variant if `onDeath` descriptor differs
-- command/text helpers if server command APIs differ
-- stat save/path helpers if descriptors differ
+- text click/hover helper variant
+- death mixin variant only if `die` descriptor differs
 - Java 17 Mixin metadata
 
 ### `1.20.5-1.21.10`
 
-Purpose: Java 21 lane before the `1.21.11` mapping and descriptor changes seen
-in other mods.
+Purpose: Java 21 lane before the current `1.21.11` anchor.
 
 Potential contents:
 
-- command/text helpers if needed
-- path/stat save helpers if needed
+- text click/hover helper variant if the `1.20.5+` shape differs from the
+  current anchor
 
 ### `1.21.11`
 
-Purpose: current proven lane.
+Purpose: current proven lane after the official-name conversion.
 
 Potential contents:
 
@@ -196,17 +283,16 @@ Purpose: Java 25 forward lane.
 
 Potential contents:
 
-- event registration helpers if Fabric APIs moved
-- command/text helpers if descriptors changed
 - Java 25 mixin/build metadata
 - non-remap release artifact behavior
+- text click/hover helper variant if needed
 
 ## Smoke-Test Invariant
 
 The packaged release jar must launch on every exact Minecraft version listed in
 the profile's `modrinth_game_versions`.
 
-Primary server smoke should prove:
+Dedicated-server smoke should prove:
 
 - Fabric server launches with the packaged jar installed
 - HC Autopsy main entrypoint initializes
@@ -216,15 +302,33 @@ Primary server smoke should prove:
 - the server reaches the tick loop
 - the server exits cleanly
 
-Optional client smoke should prove:
+No client smoke gate is planned because the mod is server-only.
 
-- the jar can be installed on the client if metadata still allows it
-- the no-op client entrypoint and client mixin config do not crash launch
+## Immediate Implementation Notes
+
+- Strip client-directed metadata and source during the build/metadata cleanup
+  pass, not as a separate product debate.
+- Convert imports and method names to official/Mojang names while adopting the
+  donor profile pipeline.
+- Keep compatibility overlays server-only:
+
+```text
+src/main/java/
+src/main/resources/
+src/compat/<compat_group>/main/java/
+src/compat/<compat_group>/main/resources/
+```
+
+- Add the smallest compatibility helpers that compile probes actually require.
+- Do not publish a profile until its dedicated-server smoke matrix is green for
+  every exact listed game version.
 
 ## Evidence Sources
 
 - Current HC Autopsy source and metadata.
-- Lifetime Stat Tracker docs, version profiles, smoke launcher, and publishing
-  workflow as a local donor pattern.
-- Future work: local compile probes and `javap` inspection for Minecraft and
-  Fabric API jars across the proposed profile ranges.
+- Lifetime Stat Tracker docs, source naming, version profiles, smoke launcher,
+  and publishing workflow as a local donor pattern.
+- Local cached Minecraft jars inspected with `javap` for `1.20`, `1.21.10`,
+  `1.21.11`, `26.1.2`, and `26.2-pre-3` where available.
+- Local cached Fabric API jars inspected for lifecycle, networking, and command
+  registration callback surfaces.

@@ -28,8 +28,13 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Documented that the current repo still targets Minecraft `1.21.11` only.
 - Documented the proposed compatibility-group profile map for Minecraft `1.20`
   through `26.2-pre-3`.
-- Documented HC Autopsy's current server-first runtime shape, data paths,
+- Documented HC Autopsy's current server-side runtime shape, data paths,
   command surface, Discord webhook config, and compatibility risk surfaces.
+- Documented the server-only product decision and the required removal of
+  client entrypoints, client mixins, client source sets, and client smoke gates
+  during the migration.
+- Documented local source and `javap` compatibility findings for the
+  official-name server API surface used by the donor pipeline.
 - Documented that profile builds, smoke launcher automation, and guarded
   Modrinth publishing are planned but not implemented yet.
 

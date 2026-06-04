@@ -19,7 +19,7 @@ until every exact runtime they claim has passing smoke evidence.
 
 ## Primary Server Smoke
 
-HC Autopsy is server-first, so the dedicated-server smoke test is the primary
+HC Autopsy is server-only, so the dedicated-server smoke test is the launcher
 gate.
 
 Each automated dedicated-server smoke launch should:
@@ -35,34 +35,11 @@ Each automated dedicated-server smoke launch should:
 - log a clear pass marker such as `HCAUTOPSY_SERVER_SMOKE_TEST_PASS`
 - exit cleanly
 
-## Optional Client Smoke
-
-The current metadata allows client installs and includes a no-op client
-entrypoint plus a client mixin config. If that remains true, each automated
-client smoke launch should:
-
-- install the packaged release jar
-- launch the exact Minecraft client runtime
-- reach the client tick loop
-- force-load any declared client mixin targets if they remain
-- log a clear pass marker such as `HCAUTOPSY_CLIENT_SMOKE_TEST_PASS`
-- exit cleanly
-
-If the project becomes server-only, remove the client smoke requirement and
-update `fabric.mod.json`, README, and this document together.
-
 ## Planned Install Sets
 
 Initial install sets:
 
 - `hc-autopsy-server-only`: jar installed on a dedicated Fabric server
-- `hc-autopsy-client-only`: optional metadata sanity launch while the jar
-  remains client-installable
-
-Future optional install set:
-
-- `hc-autopsy-integrated-server`: client launch that starts an integrated server
-  and validates run initialization
 
 ## Planned Commands
 
@@ -77,8 +54,7 @@ Future optional install set:
 .\gradlew.bat ciValidation
 ```
 
-For Linux/headless CI, client smoke launches should use `xvfb` if client smoke
-remains part of the matrix. Dedicated-server smoke should not require `xvfb`.
+Dedicated-server smoke should not require `xvfb`.
 
 Smoke logs should be written under:
 

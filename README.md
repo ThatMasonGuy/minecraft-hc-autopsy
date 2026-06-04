@@ -26,8 +26,8 @@ Current implementation:
 - Fabric Loader: `0.18.4+`
 - Fabric API: required
 - Java: `21+`
-- Primary install: dedicated or integrated Fabric server
-- Client entrypoint: currently present but no-op
+- Primary install: dedicated Fabric server
+- Target environment: server-only
 
 Planned migration target:
 
@@ -162,7 +162,7 @@ build/libs/
 ```
 
 The planned multi-version pipeline will add profile builds, release jar
-collection, smoke validation, and guarded Modrinth publishing.
+collection, dedicated-server smoke validation, and guarded Modrinth publishing.
 
 ## Project Docs
 
