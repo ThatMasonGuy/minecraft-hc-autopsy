@@ -8,7 +8,9 @@ model while auditing this mod's server-only API surface.
 
 ## Current Status
 
-HC Autopsy currently builds for Minecraft `1.21.11` only.
+HC Autopsy currently has a supported `1.21.11` build profile. Candidate profile
+files exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and `26.1-26.2-pre-3`, but
+those candidate profiles are not proven or publishable yet.
 
 This document is a source-read and local bytecode-inspection risk map, not a
 completed compile-probe report. Do not promote any profile to supported until
@@ -225,8 +227,8 @@ Likely shim:
 
 ### Java, Mixin, And Build Lane
 
-Current metadata still hardcodes Java 21 and Mixin `JAVA_21` because profile
-metadata expansion is not implemented yet.
+Current metadata expands Java and Mixin compatibility level from the active
+profile.
 
 Expected requirements:
 
@@ -309,7 +311,7 @@ No client smoke gate is planned because the mod is server-only.
 ## Immediate Implementation Notes
 
 - Preserve the server-only metadata and official/Mojang source naming while
-  adopting the donor profile pipeline.
+  adding the next compile-probe shims.
 - Keep compatibility overlays server-only:
 
 ```text

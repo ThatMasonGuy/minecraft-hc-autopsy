@@ -1,8 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: baseline-normalized single-version build. The repo still
-builds a single Minecraft `1.21.11` jar, but that jar is now server-only and
-compiled against official/Mojang mappings.
+Current checkpoint: Gradle version-profile foundation. The default supported
+profile is still Minecraft `1.21.11`, but the build now selects Minecraft,
+Fabric Loader, Fabric API, Loom, Java, metadata, and server-only compat
+overlays from `gradle/version-profiles/*.properties`.
 
 ## Project Workflow
 
@@ -17,14 +18,17 @@ compiled against official/Mojang mappings.
 
 ## Confirmed Current Shape
 
-- Current source and metadata target Minecraft `1.21.11`.
-- Current Gradle setup is a compact single-project Fabric Loom build using
-  `loom.officialMojangMappings()`.
+- Current default source and metadata target Minecraft `1.21.11`.
+- Current Gradle setup is profile-driven. The default profile is `1.21.11`.
+- `supported_minecraft_version_profiles` currently contains only `1.21.11`.
+- Candidate profiles exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
+  `26.1-26.2-pre-3`, but they are not proven or publishable yet.
 - The mod id is `hc-autopsy`.
 - Product decision implemented for the current build: HC Autopsy is
   server-only.
 - Current metadata declares `environment: "server"`, has only the main
-  entrypoint, and declares only the server mixin config.
+  entrypoint, declares only the server mixin config, and expands Minecraft,
+  Java, Fabric Loader, and Mixin compatibility values from the active profile.
 - Server initialization loads config, initializes persistence, creates the
   Discord notifier, registers `/hcautopsy`, and creates or resumes a run on
   `ServerLifecycleEvents.SERVER_STARTED`.
@@ -78,19 +82,30 @@ Known command limitations:
   official/Mojang mappings.
 - Verified the normalized current build with
   `.\gradlew.bat clean build --no-daemon --console=plain`.
+- Added version-profile properties for the supported `1.21.11` profile and the
+  first candidate compatibility groups.
+- Updated `settings.gradle` to select the active Loom version from the active
+  profile before plugin resolution.
+- Updated `build.gradle` to select the active Minecraft/Fabric/Java/Loom lane,
+  official mappings for remapped profiles, the non-remap plugin lane for
+  `26.x`, and server-only compatibility overlays.
+- Aligned the Gradle wrapper to `9.4.0` so the `26.x` Loom `1.16-SNAPSHOT`
+  profile can configure like the donor pipeline.
+- Added profile helper tasks: `printVersionProfile`, `listVersionProfiles`,
+  `buildRelease`, `buildAllVersions`, and `buildValidationVersions`.
 
 ## Current Compatibility Conclusion
 
 The current repo is only proven at Minecraft `1.21.11`.
 
 The target migration should use compatibility-group profiles rather than one jar
-per exact Minecraft patch. Initial candidate profiles should align with the
-source compatibility groups:
+per exact Minecraft patch. Initial profile files now align with the source
+compatibility groups:
 
-- `1.20-1.20.4`
-- `1.20.5-1.21.10`
-- `1.21.11`
-- `26.1-26.2-pre-3`, using source compat group `26.x`
+- supported: `1.21.11`
+- candidate: `1.20-1.20.4`
+- candidate: `1.20.5-1.21.10`
+- candidate: `26.1-26.2-pre-3`, using source compat group `26.x`
 
 These ranges are not proven for HC Autopsy yet. Promote a profile to supported
 only after build, metadata verification, and launcher smoke validation pass for
@@ -149,14 +164,16 @@ API shapes that cannot compile across the intended range.
    - Prove the normalized single-version build before adding profile
      complexity.
 
-4. Gradle version-profile foundation.
+4. Gradle version-profile foundation. Completed for supported and candidate
+   profile selection.
    - Add `gradle/version-profiles/*.properties`.
    - Update `settings.gradle` to select Loom from the active profile.
    - Update `build.gradle` to select Minecraft, mappings, Fabric Loader,
      Fabric API, Java toolchain, metadata expansion, and compat overlays from
      the active profile.
 
-5. Metadata expansion.
+5. Metadata expansion. Completed for profile-derived Minecraft, Java, Fabric
+   Loader, and Mixin values.
    - Expand `fabric.mod.json` dependencies from the active profile.
    - Expand mixin compatibility levels from the active profile.
    - Preserve server-only Fabric metadata: `environment: "server"`, no client
@@ -169,7 +186,8 @@ API shapes that cannot compile across the intended range.
      classes into overlay folders.
 
 7. Release jar verification.
-   - Add `buildRelease`, `buildAllVersions`, and metadata verification tasks.
+   - `buildRelease` and `buildAllVersions` exist.
+   - Add metadata verification tasks.
    - Verify mod id, version, license, dependencies, icon, mixin configs, and
      expanded placeholders.
 
@@ -209,9 +227,9 @@ API shapes that cannot compile across the intended range.
   `server.getWorldData().getLevelName()` should drive stats and world identity
   in official-name source.
 - `ServerPlayer#getStats().save()` should remain callable or be wrapped.
-- Mixin config currently hardcodes `JAVA_21`.
-- `fabric.mod.json` currently declares `minecraft: ~1.21.11`, `java: >=21`,
-  `fabricloader: >=0.18.4`, and `environment: "server"`.
+- Mixin compatibility level now expands from the active profile.
+- `fabric.mod.json` now expands Minecraft, Java, and Fabric Loader dependency
+  metadata from the active profile while preserving `environment: "server"`.
 - The Minecraft `26.x` lane may require Java 25 and the non-remap Loom pattern
   borrowed from the donor repo.
 

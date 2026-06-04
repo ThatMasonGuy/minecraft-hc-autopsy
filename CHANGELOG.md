@@ -22,9 +22,24 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   - `gradle/modrinth-publishing.md`
   - `gradle/modrinth-project-pages.md`
   - `gradle/release-notes/README.md`
+- Added Gradle version-profile files for the supported `1.21.11` profile and
+  the first candidate compatibility groups:
+  - `1.20-1.20.4`
+  - `1.20.5-1.21.10`
+  - `26.1-26.2-pre-3`
+- Added profile helper tasks: `printVersionProfile`, `listVersionProfiles`,
+  `buildRelease`, `buildAllVersions`, and `buildValidationVersions`.
 
 ### Changed
 
+- Changed Gradle to load Minecraft, Fabric Loader, Fabric API, Loom, Java,
+  metadata, and server-only compat overlays from the active version profile.
+- Aligned the Gradle wrapper distribution with the donor pipeline at Gradle
+  `9.4.0` so the `26.x` Loom `1.16-SNAPSHOT` profile can configure.
+- Changed `settings.gradle` to select the active Loom version before plugin
+  resolution.
+- Changed Fabric and Mixin metadata to expand Minecraft, Java, Fabric Loader,
+  and Mixin compatibility values from the active profile.
 - Normalized the current `1.21.11` build to official/Mojang mappings with
   `loom.officialMojangMappings()`.
 - Changed the current Fabric metadata to server-only by declaring
@@ -70,5 +85,6 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ### Build
 
-- Current Gradle setup builds one server-only Fabric jar for Minecraft
-  `1.21.11` with Java 21 and official/Mojang mappings.
+- Current Gradle setup builds profile-driven server-only Fabric jars. The only
+  supported profile is `1.21.11`; older and `26.x` profiles are candidates
+  until compile probes, metadata checks, and smoke validation prove them.

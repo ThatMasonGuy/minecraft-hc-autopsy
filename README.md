@@ -149,20 +149,39 @@ are intentionally ignored.
 
 ## Development
 
-Build with Gradle:
+Show the active Minecraft profile:
+
+```powershell
+.\gradlew.bat printVersionProfile --no-daemon --console=plain
+```
+
+Build the default profile with Gradle:
 
 ```powershell
 .\gradlew.bat build --no-daemon --console=plain
 ```
 
-The current jar is written under:
+Build and collect the active profile release jar:
+
+```powershell
+.\gradlew.bat buildRelease --no-daemon --console=plain
+```
+
+The current normal jar is written under:
 
 ```text
 build/libs/
 ```
 
-The planned multi-version pipeline will add profile builds, release jar
-collection, dedicated-server smoke validation, and guarded Modrinth publishing.
+Profile release jars are collected under:
+
+```text
+build/release/<profile_id>/
+```
+
+The planned multi-version pipeline still needs candidate compile shims,
+metadata verification, dedicated-server smoke validation, and guarded Modrinth
+publishing.
 
 ## Project Docs
 

@@ -1,8 +1,9 @@
 # Minecraft Version Profiles
 
-This directory will contain the multi-version profile metadata used by Gradle.
-Profile tasks are not implemented yet; the current repo still builds a single
-Minecraft `1.21.11` jar.
+This directory contains the multi-version profile metadata used by Gradle.
+The default supported profile is `1.21.11`; broader compatibility profiles are
+tracked as candidates until compile probes, metadata checks, and launcher smoke
+tests prove them.
 
 ## Goal
 
@@ -21,9 +22,9 @@ runtime claimed by a release profile. Do not add these smoke-only profiles to
 `candidate_minecraft_version_profiles` unless we intentionally decide to
 publish more jars.
 
-## Planned Profile Lists
+## Profile Lists
 
-The future `gradle.properties` model should include:
+The current `gradle.properties` model uses:
 
 ```properties
 minecraft_version_profile=1.21.11
@@ -65,26 +66,40 @@ unobfuscated_minecraft=false
 - `unobfuscated_minecraft=true` is expected only for Minecraft `26.x` profiles
   if this repo follows the donor non-remap build lane.
 
-## Current Command
+## Current Commands
 
-Baseline command:
+Show the active profile:
+
+```powershell
+.\gradlew.bat printVersionProfile --no-daemon --console=plain
+```
+
+List supported and candidate profiles:
+
+```powershell
+.\gradlew.bat listVersionProfiles --no-daemon --console=plain
+```
+
+Build the active profile:
 
 ```powershell
 .\gradlew.bat build --no-daemon --console=plain
 ```
 
-## Planned Commands
-
-After profile support exists:
+Build and collect the active profile jar:
 
 ```powershell
-.\gradlew.bat printVersionProfile
-.\gradlew.bat listVersionProfiles
-.\gradlew.bat build "-Pminecraft_version_profile=1.21.11"
-.\gradlew.bat buildRelease
-.\gradlew.bat buildAllVersions
-.\gradlew.bat buildValidationVersions
+.\gradlew.bat buildRelease --no-daemon --console=plain
 ```
+
+Build every supported profile:
+
+```powershell
+.\gradlew.bat buildAllVersions --no-daemon --console=plain
+```
+
+`buildValidationVersions` also exists, but candidate profiles are expected to
+need compatibility shims before they pass.
 
 After smoke support exists:
 
