@@ -1,0 +1,52 @@
+# Changelog
+
+All notable repo-facing changes should be recorded here. Keep Modrinth-facing
+release notes in `gradle/release-notes/<mod_version>.md`.
+
+## Unreleased
+
+### Added
+
+- Added `.env` to `.gitignore` so local publishing secrets and Modrinth tokens
+  stay outside version control.
+- Added `AGENTS.md` with checkpoint, verification, and release workflow rules
+  adapted from the Lifetime Stat Tracker compatibility pipeline.
+- Added the initial project documentation foundation for the planned
+  multi-version migration:
+  - `README.md`
+  - `TODO.md`
+  - `COMPATIBILITY.md`
+  - `gradle/compatibility-release-playbook.md`
+  - `gradle/version-profiles/README.md`
+  - `gradle/smoke-tests.md`
+  - `gradle/modrinth-publishing.md`
+  - `gradle/modrinth-project-pages.md`
+  - `gradle/release-notes/README.md`
+
+### Documented
+
+- Documented that the current repo still targets Minecraft `1.21.11` only.
+- Documented the proposed compatibility-group profile map for Minecraft `1.20`
+  through `26.2-pre-3`.
+- Documented HC Autopsy's current server-first runtime shape, data paths,
+  command surface, Discord webhook config, and compatibility risk surfaces.
+- Documented that profile builds, smoke launcher automation, and guarded
+  Modrinth publishing are planned but not implemented yet.
+
+## 1.0.0 Current Baseline
+
+### Current Behavior
+
+- Detects the first player death in a run through a server-player death mixin.
+- Records wipe cause metadata and marks the active run as wiped.
+- Snapshots vanilla stat JSON from the world's `stats` directory.
+- Stores run metadata, per-player run snapshots, run aggregates, lifetime
+  player totals, and server lifetime totals under `config/hc-autopsy/`.
+- Provides `/hcautopsy` commands for status, run history, run continuation, and
+  player/server totals.
+- Sends optional Discord webhook notifications for wipes.
+
+### Build
+
+- Current Gradle setup builds one Fabric jar for Minecraft `1.21.11` with Java
+  21.
