@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.1.0` release prep is in progress on branch
-`codex/hc-autopsy-1-1-hardening`. The preferred two-artifact release shape
-remains supported, and `1.1.0` is additive rather than a breaking data-model
-release.
+Current checkpoint: HC Autopsy `1.1.0` is published from `main` at commit
+`8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1`. The preferred two-artifact
+release shape remains supported, and `1.1.0` is additive rather than a breaking
+data-model release.
 
 ## Project Workflow
 
@@ -175,6 +175,14 @@ Known command limitations:
 - Updated the live Modrinth project summary and description body from
   `gradle/modrinth-project-pages.md`; readback matched the committed source
   copy and before/after snapshots were saved under ignored `build/modrinth/`.
+- Pushed `main` to `8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1` and passed
+  GitHub build workflow run `27085981202`.
+- Published HC Autopsy `1.1.0` to Modrinth through GitHub Actions workflow run
+  `27086049479`.
+- Published Modrinth version `O1UvL8GT` for `1.1.0+mc1.20-1.21.11`.
+- Published Modrinth version `ytzyFHiY` for `1.1.0+mc26.1-26.2-pre-3`.
+- Tagged the exact publish commit as `v1.1.0` and created the GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.1.0`.
 
 ## Current Compatibility Conclusion
 
@@ -358,3 +366,10 @@ Current release record:
 - GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.0.0`
 - Modrinth versions: `N4AixEjM` and `KdsBXXNZ`.
+- `v1.1.0`: published from commit
+  `8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1`.
+- GitHub Actions publish run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27086049479`
+- GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.1.0`
+- Modrinth versions: `O1UvL8GT` and `ytzyFHiY`.

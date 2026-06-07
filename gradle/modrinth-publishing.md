@@ -14,12 +14,18 @@ Modrinth project id: `4eBkeUAl`.
 
 Fabric API dependency project id: `P7dR8mSH`.
 
+Release `1.1.0` was published from commit
+`8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1` by GitHub Actions run
+`27086049479`.
+
 Release `1.0.0` was published from commit
 `504a625dff156ac5689a806c991d3fbd677def56` by GitHub Actions run
 `26956796078`.
 
 Published Modrinth versions:
 
+- `1.1.0+mc1.20-1.21.11`: `O1UvL8GT`
+- `1.1.0+mc26.1-26.2-pre-3`: `ytzyFHiY`
 - `1.0.0+mc1.20-1.21.11`: `N4AixEjM`
 - `1.0.0+mc26.1-26.2-pre-3`: `KdsBXXNZ`
 

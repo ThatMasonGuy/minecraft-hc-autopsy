@@ -375,6 +375,12 @@ Local `1.1.0` release-prep evidence from 2026-06-07:
 - The local dry-run upload plan wrote two listed release entries:
   `1.1.0+mc1.20-1.21.11` and `1.1.0+mc26.1-26.2-pre-3`, both using
   `gradle/release-notes/1.1.0.md`.
+- GitHub Actions dry-run publish validation run `27085465683` passed on the
+  hardening branch.
+- GitHub Actions publish run `27086049479` repeated the supported smoke matrix
+  from `main`, published `1.1.0+mc1.20-1.21.11` as Modrinth version
+  `O1UvL8GT`, and published `1.1.0+mc26.1-26.2-pre-3` as Modrinth version
+  `ytzyFHiY`.
 
 ## Immediate Implementation Notes
 

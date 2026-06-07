@@ -5,6 +5,10 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 1.1.0 - 2026-06-07
+
 ### Added
 
 - Added JUnit coverage for stat aggregation and run continuation metadata.
