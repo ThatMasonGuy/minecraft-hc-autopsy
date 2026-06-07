@@ -186,23 +186,21 @@ Likely shim:
 ### Commands And Text
 
 Current code uses server command v2, click events, hover events, text literals,
-and console-only permission checks.
+and admin command permission checks.
 
 Risk:
 
 - Command source imports change during the official-name migration.
 - Click and hover event construction differs between older and newer anchors.
-- Operator-player permission checks should not be broadened until the correct
-  version-safe server API is verified.
+- Command permission checks changed around `1.21.11` from integer permission
+  levels to permission-set objects.
 
 Implemented shim:
 
 - `TextEventCompat` for clickable/hoverable run-list entries.
-
-Remaining possible shims:
-
-- `ServerPermissionCompat` if player operators are allowed to continue runs
-  later.
+- `ServerPermissionCompat` for legacy integer permission checks and modern
+  permission-set checks. Admin commands map to command permission level 2 /
+  gamemaster, using `COMMANDS_GAMEMASTER` or the equivalent runtime field.
 
 ### Stat Snapshot Paths
 
@@ -324,6 +322,8 @@ Dedicated-server smoke should prove:
 - HC Autopsy main entrypoint initializes
 - config and persistence directories are created
 - `/hcautopsy` is registered
+- representative `/hcautopsy` command paths execute from a server command
+  source, including admin-gated commands
 - a world run is created or resumed
 - the server reaches the tick loop
 - the server exits cleanly
@@ -381,6 +381,18 @@ Local `1.1.0` release-prep evidence from 2026-06-07:
   from `main`, published `1.1.0+mc1.20-1.21.11` as Modrinth version
   `O1UvL8GT`, and published `1.1.0+mc26.1-26.2-pre-3` as Modrinth version
   `ytzyFHiY`.
+
+Local post-release shim evidence from 2026-06-07:
+
+- `.\gradlew.bat buildAllVersions --no-daemon --console=plain` passed and
+  verified release metadata for both supported profile jars.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11,26.1-26.2-pre-3" "-Phcautopsy_smoke_game_versions=1.20,1.21.11,26.2-pre-3" --no-daemon --console=plain`
+  passed for the oldest supported runtime, the newest pre-26 runtime, and
+  `26.2-pre-3`, with `commandsExecuted=true` in every pass marker.
+- `.\gradlew.bat smokeTestSupportedServers --no-daemon --console=plain`
+  passed locally in 14m 4s with 23 dedicated-server pass markers and 23
+  `commandsExecuted=true` markers, covering all exact runtimes claimed by
+  `1.20-1.21.11` and `26.1-26.2-pre-3`.
 
 ## Immediate Implementation Notes
 

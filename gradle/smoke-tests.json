@@ -17,117 +17,117 @@
       "game_versions": {
         "1.20": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.20.1": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.20.2": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.20.3": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.20.4": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.20.5": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.20.6": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.1": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.2": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.3": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.4": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.5": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.6": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.7": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.8": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.9": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.10": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "1.21.11": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         }
       }
     },
@@ -136,27 +136,27 @@
       "game_versions": {
         "26.1": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "26.1.1": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "26.1.2": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         },
         "26.2-pre-3": {
           "status": "pass",
-          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
-          "tested_at": "2026-06-04",
-          "method": "GitHub Actions candidate smoke validation run 26953422031"
+          "notes": "Packaged release jar launched as hc-autopsy-server-only on a dedicated Fabric server, initialized HC Autopsy, created config and persistence directories, created an active run, registered /hcautopsy, executed representative /hcautopsy command paths with commandsExecuted=true, printed HCAUTOPSY_SERVER_SMOKE_TEST_PASS, and exited cleanly.",
+          "tested_at": "2026-06-07",
+          "method": "Local Gradle smokeTestSupportedServers run on codex/hc-autopsy-compat-shims"
         }
       }
     }

@@ -41,8 +41,8 @@ webhook summary.
 - In-game wipe summary after stat capture completes
 - `/hcautopsy` commands for status, run history, cached players, player totals,
   server totals, and lifetime leaderboards
-- Console-safe tools for continuing a wiped run, recalculating lifetime totals,
-  reloading config, and testing Discord webhooks
+- Operator/console-safe tools for continuing a wiped run, recalculating
+  lifetime totals, reloading config, and testing Discord webhooks
 - Optional Discord webhook notifications for wipe summaries
 - Defensive config/data loading and atomic writes for persisted HC Autopsy data
 - Server-only install; no client mod required

@@ -78,6 +78,10 @@ Command root:
 
 Subcommands:
 
+Admin subcommands are available from the server console, command blocks, and
+operator-player command sources with command permission level 2 / gamemaster or
+higher across the supported compatibility profiles.
+
 ```text
 /hcautopsy status
 ```
@@ -108,8 +112,8 @@ implementation.
 /hcautopsy run continue <reason>
 ```
 
-Continues a wiped run and recalculates lifetime totals. Current implementation
-allows this from console or command blocks only.
+Continues a wiped run and recalculates lifetime totals. Requires admin command
+access.
 
 ```text
 /hcautopsy players
@@ -143,23 +147,22 @@ Shows server lifetime totals across wiped runs.
 /hcautopsy recalc
 ```
 
-Recalculates lifetime totals from all wiped runs. Current implementation allows
-this from console or command blocks only.
+Recalculates lifetime totals from all wiped runs. Requires admin command
+access.
 
 ```text
 /hcautopsy config reload
 ```
 
-Reloads `config/hc-autopsy/config.json` without restarting the server. Current
-implementation allows this from console or command blocks only.
+Reloads `config/hc-autopsy/config.json` without restarting the server. Requires
+admin command access.
 
 ```text
 /hcautopsy discord test
 ```
 
 Queues a Discord test notification when Discord notifications and a webhook URL
-are configured. Current implementation allows this from console or command
-blocks only.
+are configured. Requires admin command access.
 
 ## Data Files
 

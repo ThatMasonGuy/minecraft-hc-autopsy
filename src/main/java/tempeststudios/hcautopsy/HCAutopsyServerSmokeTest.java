@@ -3,8 +3,10 @@ package tempeststudios.hcautopsy;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.util.List;
 
 public final class HCAutopsyServerSmokeTest {
     private static final String SMOKE_TEST_PROPERTY = "hcautopsy.smokeTest";
@@ -48,6 +50,7 @@ public final class HCAutopsyServerSmokeTest {
                         + " installSet="
                         + System.getProperty("hcautopsy.smokeInstallSet", "unknown")
                         + " commandRegistered=true"
+                        + " commandsExecuted=true"
                         + " configLoaded=true"
                         + " persistenceDir="
                         + HCAutopsy.getPersistence().getBaseDirectory()
@@ -80,6 +83,7 @@ public final class HCAutopsyServerSmokeTest {
         requireCommand(server, "hcautopsy", "recalc");
         requireCommand(server, "hcautopsy", "config", "reload");
         requireCommand(server, "hcautopsy", "discord", "test");
+        executeSmokeCommands(server);
     }
 
     private static void requireCommand(MinecraftServer server, String... commandPath) {
@@ -107,6 +111,54 @@ public final class HCAutopsyServerSmokeTest {
         } catch (Throwable ignored) {
             return false;
         }
+    }
+
+    private static void executeSmokeCommands(MinecraftServer server) {
+        for (String command : List.of(
+                "hcautopsy",
+                "hcautopsy status",
+                "hcautopsy run list",
+                "hcautopsy run last",
+                "hcautopsy run continue smoke-test",
+                "hcautopsy player SmokeTester totals",
+                "hcautopsy players",
+                "hcautopsy leaderboard playtime",
+                "hcautopsy server totals",
+                "hcautopsy recalc",
+                "hcautopsy config reload",
+                "hcautopsy discord test"
+        )) {
+            executeCommand(server, command);
+        }
+    }
+
+    private static void executeCommand(MinecraftServer server, String command) {
+        try {
+            Object commands = invokeNoArg(server, "getCommands");
+            Object source = invokeNoArg(server, "createCommandSourceStack");
+            Method method = findPerformPrefixedCommand(commands, source);
+            method.invoke(commands, source, command);
+        } catch (InvocationTargetException e) {
+            throw new IllegalStateException(
+                    "Server smoke test could not execute /" + command + ".",
+                    e.getTargetException()
+            );
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new IllegalStateException("Server smoke test could not execute /" + command + ".", e);
+        }
+    }
+
+    private static Method findPerformPrefixedCommand(Object commands, Object source) throws NoSuchMethodException {
+        for (Method method : commands.getClass().getMethods()) {
+            if (!method.getName().equals("performPrefixedCommand") || method.getParameterCount() != 2) {
+                continue;
+            }
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            if (parameterTypes[0].isAssignableFrom(source.getClass()) && parameterTypes[1] == String.class) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException("performPrefixedCommand(" + source.getClass().getName() + ", String)");
     }
 
     private static Object invokeNoArg(Object target, String methodName) throws ReflectiveOperationException {

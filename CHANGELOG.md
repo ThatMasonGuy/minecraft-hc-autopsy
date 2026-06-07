@@ -5,7 +5,24 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
-No unreleased changes.
+### Added
+
+- Added `ServerPermissionCompat` so admin command gates work with both the
+  legacy integer command-permission API and the `1.21.11+` / `26.x`
+  permission-set API.
+- Expanded dedicated-server smoke verification to execute representative
+  `/hcautopsy` command paths from a server command source.
+
+### Fixed
+
+- Allowed operator-player command sources with command permission level 2 /
+  gamemaster or higher to use HC Autopsy admin commands across the supported
+  profiles.
+
+### Changed
+
+- Updated README, compatibility notes, smoke-test docs, and Modrinth
+  project-page source copy to reflect operator/console admin command support.
 
 ## 1.1.0 - 2026-06-07
 

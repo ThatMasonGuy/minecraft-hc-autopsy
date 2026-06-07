@@ -1,9 +1,10 @@
 # HC Autopsy TODO
 
 Current checkpoint: HC Autopsy `1.1.0` is published from `main` at commit
-`8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1`. The preferred two-artifact
-release shape remains supported, and `1.1.0` is additive rather than a breaking
-data-model release.
+`8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1`. The post-release compatibility
+shim pass adds admin command permission support for both supported profile
+lanes and deepens server smoke command execution without changing the on-disk
+data model.
 
 ## Project Workflow
 
@@ -28,6 +29,11 @@ data-model release.
 - Supported profiles have passing dedicated-server smoke records in
   `gradle/smoke-tests.json` for every exact Minecraft runtime they claim.
 - Supported profiles pass compile and release-jar metadata probes.
+- Admin command gates use `ServerPermissionCompat`, allowing console,
+  command-block, and operator-player sources with command permission level 2 /
+  gamemaster or higher across the supported profiles.
+- The dedicated-server smoke helper now verifies registration and executes
+  representative `/hcautopsy` command paths from a server command source.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -77,11 +83,8 @@ Implemented subcommands:
 
 Known command limitations:
 
-- `/hcautopsy run continue <reason>` currently allows console or command-block
-  sources, with a reflective legacy permission check for older operator-player
-  command sources. A full `1.21.11+` permission-object compat shim is still
-  pending before claiming operator-player admin access across all supported
-  profiles.
+- Admin subcommands require console, command-block, or operator-player command
+  sources with command permission level 2 / gamemaster or higher.
 - `/hcautopsy player <name> totals` now resolves online players and players in
   the persisted HC Autopsy name cache.
 
@@ -183,6 +186,19 @@ Known command limitations:
 - Published Modrinth version `ytzyFHiY` for `1.1.0+mc26.1-26.2-pre-3`.
 - Tagged the exact publish commit as `v1.1.0` and created the GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.1.0`.
+- Added `ServerPermissionCompat` for legacy integer and modern permission-set
+  command gates, including support for the `1.21.11+` / `26.x` gamemaster
+  permission shape.
+- Expanded the dedicated-server smoke helper to execute representative
+  `/hcautopsy` command paths after verifying registration.
+- Updated README, compatibility notes, smoke-test docs, and Modrinth
+  project-page source copy for operator/console admin command support.
+- Verified the shim pass with `git diff --check`,
+  `.\gradlew.bat buildAllVersions --no-daemon --console=plain`, endpoint
+  selected server smokes for `1.20`, `1.21.11`, and `26.2-pre-3`, and the full
+  `.\gradlew.bat smokeTestSupportedServers --no-daemon --console=plain` gate.
+  The full local smoke run passed all 23 supported exact runtimes with
+  `commandsExecuted=true`.
 
 ## Current Compatibility Conclusion
 
@@ -280,10 +296,12 @@ candidate cannot honestly hold.
      entrypoint, and no client mixin config.
    - Reconciled repository license and Fabric metadata to `LGPL-3.0-or-later`.
 
-6. Compatibility shims. Started.
+6. Compatibility shims. Completed for the current supported profile shape.
    - Add only the small adapters needed by compile probes.
    - Prefer shared code calling compat adapters over copying full feature
      classes into overlay folders.
+   - Current shims are `TextEventCompat` for chat events and
+     `ServerPermissionCompat` for command gates.
 
 7. Release jar verification. Completed for current profile tasks.
    - `buildRelease` and `buildAllVersions` exist.
@@ -296,6 +314,8 @@ candidate cannot honestly hold.
    - Added dedicated-server smoke tests as the required launcher gate.
    - Recorded passing supported smoke rows for every exact runtime claimed by
      `1.20-1.21.11` and `26.1-26.2-pre-3`.
+   - Smoke now verifies command registration and executes representative
+     `/hcautopsy` command paths.
 
 9. GitHub Actions workflows. Completed for initial smoke/dry-run gates.
    - Push/PR validation runs supported-profile builds and smoke matrix checks.
@@ -338,10 +358,6 @@ candidate cannot honestly hold.
 
 ## Backlog
 
-- Add a `1.21.11+` permission-object compat shim before documenting
-  operator-player admin commands as fully supported across all release profiles.
-- Add deeper dedicated-server smoke coverage that executes read-only
-  `/hcautopsy` subcommands, not only verifying registration.
 - Document any data migration if run metadata or lifetime stat formats change.
 - Keep README command documentation aligned with actual command behavior.
 

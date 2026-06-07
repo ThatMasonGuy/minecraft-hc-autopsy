@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import tempeststudios.hcautopsy.HCAutopsy;
+import tempeststudios.hcautopsy.compat.ServerPermissionCompat;
 import tempeststudios.hcautopsy.compat.TextEventCompat;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.RunState;
@@ -75,7 +76,7 @@ public class CommandRegistry {
                                 .then(Commands.literal("list")
                                         .executes(this::runListCommand))
                                 .then(Commands.literal("continue")
-                                        .requires(CommandRegistry::requiresOp)
+                                        .requires(CommandRegistry::requiresAdminCommandSource)
                                         .then(Commands.argument("reason", StringArgumentType.greedyString())
                                                 .executes(this::runContinueCommand)))
                                 .then(Commands.argument("id", StringArgumentType.word())
@@ -90,14 +91,14 @@ public class CommandRegistry {
                                 .then(Commands.literal("totals")
                                         .executes(this::serverTotalsCommand)))
                         .then(Commands.literal("recalc")
-                                .requires(CommandRegistry::requiresOp)
+                                .requires(CommandRegistry::requiresAdminCommandSource)
                                 .executes(this::recalculateCommand))
                         .then(Commands.literal("config")
-                                .requires(CommandRegistry::requiresOp)
+                                .requires(CommandRegistry::requiresAdminCommandSource)
                                 .then(Commands.literal("reload")
                                         .executes(this::configReloadCommand)))
                         .then(Commands.literal("discord")
-                                .requires(CommandRegistry::requiresOp)
+                                .requires(CommandRegistry::requiresAdminCommandSource)
                                 .then(Commands.literal("test")
                                         .executes(this::discordTestCommand)))
         );
@@ -553,24 +554,8 @@ public class CommandRegistry {
         }
     }
 
-    private static boolean requiresOp(CommandSourceStack source) {
-        if (source.getEntity() == null) {
-            return true;
-        }
-        return hasLegacyPermissionLevel(source, 2);
-    }
-
-    private static boolean hasLegacyPermissionLevel(CommandSourceStack source, int permissionLevel) {
-        for (String methodName : List.of("hasPermission", "method_9259")) {
-            try {
-                Object result = source.getClass().getMethod(methodName, int.class).invoke(source, permissionLevel);
-                if (result instanceof Boolean permitted) {
-                    return permitted;
-                }
-            } catch (ReflectiveOperationException | RuntimeException ignored) {
-            }
-        }
-        return false;
+    private static boolean requiresAdminCommandSource(CommandSourceStack source) {
+        return ServerPermissionCompat.hasCommandLevel(source, 2);
     }
 
     private enum LeaderboardStat {

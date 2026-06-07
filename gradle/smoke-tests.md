@@ -31,6 +31,8 @@ Each automated dedicated-server smoke launch should:
 - reach the server tick loop
 - verify `/hcautopsy` is registered
 - verify the expected `/hcautopsy` subcommands are registered
+- execute representative `/hcautopsy` command paths from a server command
+  source, including admin-gated commands
 - verify config and persistence initialization
 - verify an active run was created or resumed
 - log a clear pass marker such as `HCAUTOPSY_SERVER_SMOKE_TEST_PASS`
@@ -63,8 +65,10 @@ gradle/smoke-tests.json
 
 Current supported smoke status:
 
-- `1.20-1.21.11`: all exact runtime rows `pass`
-- `26.1-26.2-pre-3`: all exact runtime rows `pass`
+- `1.20-1.21.11`: all exact runtime rows `pass`; last refreshed by local
+  command-execution smoke on 2026-06-07
+- `26.1-26.2-pre-3`: all exact runtime rows `pass`; last refreshed by local
+  command-execution smoke on 2026-06-07
 
 Current candidate smoke status:
 
