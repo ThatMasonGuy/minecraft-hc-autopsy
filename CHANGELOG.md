@@ -42,6 +42,12 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ### Changed
 
+- Bumped `mod_version` to `1.1.0` for the additive hardening and in-game tools
+  release.
+- Updated README, Fabric metadata description, selected smoke-test examples,
+  and Modrinth project-page source copy for the expanded feature set.
+- Recorded local `1.1.0` release-prep validation and dry-run upload-plan
+  evidence in the project process docs.
 - Updated repository and Fabric metadata licensing to `LGPL-3.0-or-later`.
 - Rewrote the Modrinth project summary and description source copy to match the
   Lifetime Stat Tracker project-page style.

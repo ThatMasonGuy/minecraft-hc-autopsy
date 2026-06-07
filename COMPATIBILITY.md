@@ -344,7 +344,7 @@ Local and GitHub Actions evidence from 2026-06-04:
 - The `26.1-26.2-pre-3` release jar metadata expands to server-only Fabric
   metadata with `minecraft: >=26.1 <=26.2-pre.3`, `java: >=25`, and Mixin
   `JAVA_25`.
-- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11" --no-daemon --console=plain`
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11" --no-daemon --console=plain`
   passed for the supported `1.21.11` release jar.
 - `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain`
   passed, wrote a local upload plan, and did not call the Modrinth API.
@@ -363,6 +363,18 @@ Local and GitHub Actions evidence from 2026-06-04:
 
 The promoted supported profiles have passing dedicated-server smoke rows for
 all exact Minecraft versions they claim.
+
+Local `1.1.0` release-prep evidence from 2026-06-07:
+
+- `.\gradlew.bat buildAllVersions --no-daemon --console=plain` passed and
+  verified `hc-autopsy-1.1.0.jar` release metadata for both supported profiles.
+- `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain` completed
+  the full supported-profile publish validation path locally, including 19
+  `1.20-1.21.11` dedicated-server smoke rows and 4 `26.1-26.2-pre-3`
+  dedicated-server smoke rows.
+- The local dry-run upload plan wrote two listed release entries:
+  `1.1.0+mc1.20-1.21.11` and `1.1.0+mc26.1-26.2-pre-3`, both using
+  `gradle/release-notes/1.1.0.md`.
 
 ## Immediate Implementation Notes
 

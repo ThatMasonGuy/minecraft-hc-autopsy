@@ -30,6 +30,7 @@ Each automated dedicated-server smoke launch should:
   `server.properties`
 - reach the server tick loop
 - verify `/hcautopsy` is registered
+- verify the expected `/hcautopsy` subcommands are registered
 - verify config and persistence initialization
 - verify an active run was created or resumed
 - log a clear pass marker such as `HCAUTOPSY_SERVER_SMOKE_TEST_PASS`
@@ -45,7 +46,7 @@ Each automated dedicated-server smoke launch should:
 .\gradlew.bat verifySmokeTestMatrix
 .\gradlew.bat smokeTestSupportedServers
 .\gradlew.bat smokeTestValidationServers
-.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11"
+.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11"
 .\gradlew.bat smokeTestSupported
 .\gradlew.bat smokeTestValidation
 .\gradlew.bat publishValidation

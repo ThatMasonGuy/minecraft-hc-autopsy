@@ -3,7 +3,7 @@
 	"id": "hc-autopsy",
 	"version": "${version}",
 	"name": "HC Autopsy",
-	"description": "Capture Hardcore world wipes, full player stat snapshots, and lifetime run history on Fabric servers.",
+	"description": "Capture Hardcore wipes, player stat snapshots, leaderboards, and lifetime run history on Fabric servers.",
 	"authors": [
 		"Tempest Studios"
 	],

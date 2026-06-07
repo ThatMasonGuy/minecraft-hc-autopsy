@@ -105,7 +105,16 @@ Run the current local dry run with:
 .\gradlew.bat publishModrinthDryRun --no-daemon --console=plain
 ```
 
-It wrote `build/modrinth/upload-plan.json` and did not call the Modrinth API.
+For `1.1.0` release prep on 2026-06-07, it completed the full local
+publish-validation path, wrote `build/modrinth/upload-plan.json`, and did not
+call the Modrinth API. The plan contained:
+
+```text
+1.1.0+mc1.20-1.21.11
+1.1.0+mc26.1-26.2-pre-3
+```
+
+Both entries used `gradle/release-notes/1.1.0.md`.
 
 ## Git Tags And GitHub Releases
 

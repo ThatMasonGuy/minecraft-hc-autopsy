@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.1.0` release hardening is in progress on
-branch `codex/hc-autopsy-1-1-hardening`. The preferred two-artifact `1.0.0`
-release shape remains supported, and `1.1.0` is additive rather than a breaking
-data-model release.
+Current checkpoint: HC Autopsy `1.1.0` release prep is in progress on branch
+`codex/hc-autopsy-1-1-hardening`. The preferred two-artifact release shape
+remains supported, and `1.1.0` is additive rather than a breaking data-model
+release.
 
 ## Project Workflow
 
@@ -164,6 +164,14 @@ Known command limitations:
   subcommands, not only the root command literal.
 - Removed local Gradle 10 deprecation warnings from release metadata and smoke
   task wiring.
+- Bumped `mod_version` to `1.1.0` and refreshed README, compatibility smoke
+  examples, Fabric metadata description, and Modrinth project-page source copy
+  for the expanded command and postmortem feature set.
+- Verified `1.1.0` release metadata for both supported profiles with
+  `.\gradlew.bat buildAllVersions --no-daemon --console=plain`.
+- Completed the local `1.1.0` Modrinth dry-run publish gate with 19 passing
+  `1.20-1.21.11` server smoke rows, 4 passing `26.1-26.2-pre-3` server smoke
+  rows, and a two-entry upload plan for the supported profile jars.
 
 ## Current Compatibility Conclusion
 
@@ -323,7 +331,6 @@ candidate cannot honestly hold.
   operator-player admin commands as fully supported across all release profiles.
 - Add deeper dedicated-server smoke coverage that executes read-only
   `/hcautopsy` subcommands, not only verifying registration.
-- Reconcile `LICENSE` with Fabric metadata before publishing.
 - Document any data migration if run metadata or lifetime stat formats change.
 - Keep README command documentation aligned with actual command behavior.
 

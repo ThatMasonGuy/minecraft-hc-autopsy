@@ -9,24 +9,25 @@ description pages. Update it before changing live Modrinth project metadata.
 - Project ID: `4eBkeUAl`
 - Summary:
 
-Capture Hardcore world wipes, full player stat snapshots, and lifetime run history on Fabric servers.
+Capture Hardcore wipes, player stat snapshots, leaderboards, and lifetime run history on Fabric servers.
 
 ### Description Markdown
 
 ```markdown
 HC Autopsy is a lightweight Fabric server mod that turns Hardcore wipes into
-durable run history.
+durable run history, lifetime totals, and in-game postmortem tools.
 
 Minecraft normally treats a Hardcore death as the end of the story. Servers get
 reset, stat files move around, chat scrolls away, and the details of the run can
 disappear. HC Autopsy keeps a separate server-side record in your config folder,
 so each wipe leaves behind the death context, vanilla stat snapshots, run
-totals, and lifetime player and server history.
+totals, cached player names, and lifetime player and server history.
 
 It works server-side on dedicated Fabric servers. Players do not need to install
 the mod. When the first player dies in a run, HC Autopsy records the wipe,
 snapshots every player's vanilla stat JSON, aggregates the run, updates lifetime
-totals, and can optionally send a Discord webhook summary.
+totals, broadcasts an in-game wipe summary, and can optionally send a Discord
+webhook summary.
 
 ## Features
 
@@ -34,11 +35,16 @@ totals, and can optionally send a Discord webhook summary.
 - First-death wipe detection for active runs
 - Death message, damage source, attacker, player, and world metadata
 - Raw vanilla player stat snapshots for complete stat fidelity
-- Stores per-run metadata, per-player snapshots, and aggregated run totals
+- Stores per-run metadata, per-player snapshots, aggregated run totals, and
+  cached player names
 - Maintains lifetime player and server totals across wiped runs
-- `/hcautopsy` commands for status, run history, player totals, and server totals
-- Console-safe tools for continuing a wiped run and recalculating lifetime totals
+- In-game wipe summary after stat capture completes
+- `/hcautopsy` commands for status, run history, cached players, player totals,
+  server totals, and lifetime leaderboards
+- Console-safe tools for continuing a wiped run, recalculating lifetime totals,
+  reloading config, and testing Discord webhooks
 - Optional Discord webhook notifications for wipe summaries
+- Defensive config/data loading and atomic writes for persisted HC Autopsy data
 - Server-only install; no client mod required
 
 ## Good for
@@ -47,6 +53,7 @@ totals, and can optionally send a Discord webhook summary.
 - Challenge and limited-life runs
 - Community worlds with seasonal resets
 - Post-wipe stat review
+- Comparing lifetime playtime, deaths, distance walked, and jumps
 - Long-term server history
 - Discord communities that want automatic wipe summaries
 - Players who want the receipts after a run goes wrong
