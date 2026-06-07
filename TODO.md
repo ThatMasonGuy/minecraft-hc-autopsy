@@ -1,8 +1,8 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.2.0` release prep is in progress from
-`main`. The compatibility shim pass adds admin command permission support for
-both supported profile lanes and deepens server smoke command execution without
+Current checkpoint: HC Autopsy `1.2.0` is published from `main`. The
+compatibility shim release adds admin command permission support for both
+supported profile lanes and deepens server smoke command execution without
 changing the on-disk data model.
 
 ## Project Workflow
@@ -205,6 +205,16 @@ Known command limitations:
   release.
 - Verified `1.2.0` release metadata for both supported profiles with
   `.\gradlew.bat buildAllVersions verifySmokeTestMatrix --no-daemon --console=plain`.
+- Pushed `main` to `5d5c9d28a247d71cc9b5906c620a0480a3b628d6` and passed
+  GitHub build workflow run `27090363029`.
+- Published HC Autopsy `1.2.0` to Modrinth through GitHub Actions workflow run
+  `27090442427`.
+- Published Modrinth version `aTPKOz6I` for `1.2.0+mc1.20-1.21.11`.
+- Published Modrinth version `WO6HnQEM` for `1.2.0+mc26.1-26.2-pre-3`.
+- Tagged the exact publish commit as `v1.2.0` and created the GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`.
+- Removed merged branch refs for the completed `1.1.0` hardening and `1.2.0`
+  compatibility-shim work after verifying they had no commits outside `main`.
 
 ## Current Compatibility Conclusion
 
@@ -395,3 +405,12 @@ Current release record:
 - GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.1.0`
 - Modrinth versions: `O1UvL8GT` and `ytzyFHiY`.
+- `v1.2.0`: published from commit
+  `5d5c9d28a247d71cc9b5906c620a0480a3b628d6`.
+- GitHub Actions build run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27090363029`
+- GitHub Actions publish run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27090442427`
+- GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`
+- Modrinth versions: `aTPKOz6I` and `WO6HnQEM`.

@@ -5,7 +5,10 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
-No unreleased changes.
+### Changed
+
+- Recorded the completed `1.2.0` Modrinth publish, GitHub validation, GitHub
+  Release, and merged-branch cleanup details.
 
 ## 1.2.0 - 2026-06-07
 

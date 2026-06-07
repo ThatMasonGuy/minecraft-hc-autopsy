@@ -394,6 +394,19 @@ Local post-release shim evidence from 2026-06-07:
   `commandsExecuted=true` markers, covering all exact runtimes claimed by
   `1.20-1.21.11` and `26.1-26.2-pre-3`.
 
+Release `1.2.0` evidence from 2026-06-07:
+
+- `.\gradlew.bat buildAllVersions verifySmokeTestMatrix --no-daemon --console=plain`
+  passed locally and verified `hc-autopsy-1.2.0.jar` release metadata for both
+  supported profiles.
+- GitHub Actions build run `27090363029` passed from `main` at commit
+  `5d5c9d28a247d71cc9b5906c620a0480a3b628d6`.
+- GitHub Actions publish run `27090442427` repeated the supported smoke matrix,
+  published `1.2.0+mc1.20-1.21.11` as Modrinth version `aTPKOz6I`, and
+  published `1.2.0+mc26.1-26.2-pre-3` as Modrinth version `WO6HnQEM`.
+- The exact publish commit is tagged `v1.2.0` and has a GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`.
+
 ## Immediate Implementation Notes
 
 - Preserve the server-only metadata and official/Mojang source naming while
