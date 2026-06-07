@@ -172,6 +172,9 @@ Known command limitations:
 - Completed the local `1.1.0` Modrinth dry-run publish gate with 19 passing
   `1.20-1.21.11` server smoke rows, 4 passing `26.1-26.2-pre-3` server smoke
   rows, and a two-entry upload plan for the supported profile jars.
+- Updated the live Modrinth project summary and description body from
+  `gradle/modrinth-project-pages.md`; readback matched the committed source
+  copy and before/after snapshots were saved under ignored `build/modrinth/`.
 
 ## Current Compatibility Conclusion
 

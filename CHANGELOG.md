@@ -46,6 +46,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   release.
 - Updated README, Fabric metadata description, selected smoke-test examples,
   and Modrinth project-page source copy for the expanded feature set.
+- Updated the live Modrinth project summary and description body from the
+  committed project-page source copy.
 - Recorded local `1.1.0` release-prep validation and dry-run upload-plan
   evidence in the project process docs.
 - Updated repository and Fabric metadata licensing to `LGPL-3.0-or-later`.

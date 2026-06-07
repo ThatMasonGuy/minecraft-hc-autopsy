@@ -116,6 +116,11 @@ call the Modrinth API. The plan contained:
 
 Both entries used `gradle/release-notes/1.1.0.md`.
 
+The live Modrinth project summary and description body were updated from
+`gradle/modrinth-project-pages.md` during `1.1.0` release prep on 2026-06-07.
+Before/after readback snapshots were saved under ignored `build/modrinth/`
+artifacts.
+
 ## Git Tags And GitHub Releases
 
 After a real Modrinth publish succeeds, create an annotated Git tag for the
