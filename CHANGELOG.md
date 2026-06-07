@@ -5,6 +5,10 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 1.2.0 - 2026-06-07
+
 ### Added
 
 - Added `ServerPermissionCompat` so admin command gates work with both the
@@ -23,6 +27,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 - Updated README, compatibility notes, smoke-test docs, and Modrinth
   project-page source copy to reflect operator/console admin command support.
+- Bumped `mod_version` to `1.2.0` for the command-permission compatibility
+  release.
 
 ## 1.1.0 - 2026-06-07
 

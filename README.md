@@ -21,8 +21,8 @@ can answer questions like:
 - Broadcasts an in-game wipe summary after stat capture finishes
 - Provides `/hcautopsy` commands for run status, run history, player lists,
   lifetime totals, and leaderboards
-- Allows console and command-block admin tools for continuing wiped runs,
-  recalculating totals, reloading config, and testing Discord notifications
+- Allows operator/console admin tools for continuing wiped runs, recalculating
+  totals, reloading config, and testing Discord notifications
 - Supports optional Discord webhook notifications
 
 ## Supported Environment

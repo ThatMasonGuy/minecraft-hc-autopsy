@@ -1,10 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.1.0` is published from `main` at commit
-`8bebff4c76a764ae49ed9d237b5eac5d6fa50bd1`. The post-release compatibility
-shim pass adds admin command permission support for both supported profile
-lanes and deepens server smoke command execution without changing the on-disk
-data model.
+Current checkpoint: HC Autopsy `1.2.0` release prep is in progress from
+`main`. The compatibility shim pass adds admin command permission support for
+both supported profile lanes and deepens server smoke command execution without
+changing the on-disk data model.
 
 ## Project Workflow
 
@@ -199,6 +198,13 @@ Known command limitations:
   `.\gradlew.bat smokeTestSupportedServers --no-daemon --console=plain` gate.
   The full local smoke run passed all 23 supported exact runtimes with
   `commandsExecuted=true`.
+- Confirmed the GitHub Release for `v1.1.0` exists before starting the
+  `1.2.0` version bump.
+- Bumped `mod_version` to `1.2.0` and added
+  `gradle/release-notes/1.2.0.md` for the command-permission compatibility
+  release.
+- Verified `1.2.0` release metadata for both supported profiles with
+  `.\gradlew.bat buildAllVersions verifySmokeTestMatrix --no-daemon --console=plain`.
 
 ## Current Compatibility Conclusion
 
