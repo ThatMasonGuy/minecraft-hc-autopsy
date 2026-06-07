@@ -69,18 +69,41 @@ public final class HCAutopsyServerSmokeTest {
         if (HCAutopsy.getRunManager() == null || !HCAutopsy.getRunManager().hasActiveRun()) {
             throw new IllegalStateException("Server smoke test found no active HC Autopsy run.");
         }
-        if (!hasCommand(server, "hcautopsy")) {
-            throw new IllegalStateException("Server smoke test could not find /hcautopsy in the command dispatcher.");
+        requireCommand(server, "hcautopsy");
+        requireCommand(server, "hcautopsy", "status");
+        requireCommand(server, "hcautopsy", "run", "list");
+        requireCommand(server, "hcautopsy", "run", "continue");
+        requireCommand(server, "hcautopsy", "player");
+        requireCommand(server, "hcautopsy", "players");
+        requireCommand(server, "hcautopsy", "leaderboard", "playtime");
+        requireCommand(server, "hcautopsy", "server", "totals");
+        requireCommand(server, "hcautopsy", "recalc");
+        requireCommand(server, "hcautopsy", "config", "reload");
+        requireCommand(server, "hcautopsy", "discord", "test");
+    }
+
+    private static void requireCommand(MinecraftServer server, String... commandPath) {
+        if (!hasCommand(server, commandPath)) {
+            throw new IllegalStateException(
+                    "Server smoke test could not find /" + String.join(" ", commandPath)
+                            + " in the command dispatcher."
+            );
         }
     }
 
-    private static boolean hasCommand(MinecraftServer server, String commandName) {
+    private static boolean hasCommand(MinecraftServer server, String... commandPath) {
         try {
             Object commands = invokeNoArg(server, "getCommands");
             Object dispatcher = invokeNoArg(commands, "getDispatcher");
-            Object root = invokeNoArg(dispatcher, "getRoot");
-            Method getChild = root.getClass().getMethod("getChild", String.class);
-            return getChild.invoke(root, commandName) != null;
+            Object node = invokeNoArg(dispatcher, "getRoot");
+            for (String commandName : commandPath) {
+                Method getChild = node.getClass().getMethod("getChild", String.class);
+                node = getChild.invoke(node, commandName);
+                if (node == null) {
+                    return false;
+                }
+            }
+            return true;
         } catch (Throwable ignored) {
             return false;
         }

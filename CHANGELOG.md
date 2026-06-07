@@ -5,6 +5,41 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+### Added
+
+- Added JUnit coverage for stat aggregation and run continuation metadata.
+- Added a persisted player-name cache used by offline player total lookups,
+  player-name suggestions, and wipe summary display names.
+- Added `/hcautopsy players` to list cached player names.
+- Added lifetime leaderboards:
+  - `/hcautopsy leaderboard playtime`
+  - `/hcautopsy leaderboard deaths`
+  - `/hcautopsy leaderboard walked`
+  - `/hcautopsy leaderboard jumps`
+- Added admin commands for lifetime recalculation, config reload, and Discord
+  webhook testing:
+  - `/hcautopsy recalc`
+  - `/hcautopsy config reload`
+  - `/hcautopsy discord test`
+- Added an in-game wipe summary broadcast after stat capture completes.
+
+### Fixed
+
+- Prevented `/hcautopsy run continue <reason>` from racing against delayed wipe
+  stat capture and re-adding continued runs to lifetime totals.
+- Changed wipe stat capture to honor configured `statSaveDelayMs` and wait for
+  server-thread stat saves before reading vanilla stat JSON.
+- Honored `discordNotificationsEnabled` when deciding whether webhook sends are
+  configured.
+- Made config and run metadata loading more tolerant of malformed JSON.
+- Switched config, metadata, stat snapshot, aggregate, and lifetime stat writes
+  to atomic file replacement.
+- Sorted run lists by metadata start time instead of lexical run id order.
+- Expanded dedicated-server smoke verification to check expected `/hcautopsy`
+  subcommands.
+- Removed local Gradle 10 deprecation warnings from release verification and
+  smoke task wiring.
+
 ### Changed
 
 - Updated repository and Fabric metadata licensing to `LGPL-3.0-or-later`.

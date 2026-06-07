@@ -6,8 +6,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import tempeststudios.hcautopsy.HCAutopsy;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Configuration holder for HC Autopsy.
@@ -42,8 +44,11 @@ public class ModConfig {
             try {
                 String json = Files.readString(configPath);
                 config = GSON.fromJson(json, ModConfig.class);
+                if (config == null) {
+                    throw new IllegalStateException("Config file parsed to null");
+                }
                 HCAutopsy.LOGGER.info("Loaded HC Autopsy configuration");
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 HCAutopsy.LOGGER.error("Failed to load config, using defaults: {}", e.getMessage());
                 config = new ModConfig();
             }
@@ -64,9 +69,24 @@ public class ModConfig {
     public void save() {
         try {
             Files.createDirectories(configPath.getParent());
-            Files.writeString(configPath, GSON.toJson(this));
+            writeStringAtomic(configPath, GSON.toJson(this));
         } catch (IOException e) {
             HCAutopsy.LOGGER.error("Failed to save config: {}", e.getMessage());
+        }
+    }
+
+    private static void writeStringAtomic(Path path, String content) throws IOException {
+        Files.createDirectories(path.getParent());
+        Path tempPath = Files.createTempFile(path.getParent(), path.getFileName().toString(), ".tmp");
+        try {
+            Files.writeString(tempPath, content);
+            try {
+                Files.move(tempPath, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempPath);
         }
     }
 
@@ -81,7 +101,7 @@ public class ModConfig {
     }
 
     public int getStatSaveDelayMs() {
-        return statSaveDelayMs;
+        return Math.max(0, statSaveDelayMs);
     }
 
     // ==================== Setters ====================
@@ -97,7 +117,7 @@ public class ModConfig {
     }
 
     public void setStatSaveDelayMs(int delayMs) {
-        this.statSaveDelayMs = delayMs;
+        this.statSaveDelayMs = Math.max(0, delayMs);
         save();
     }
 }

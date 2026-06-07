@@ -69,6 +69,7 @@ base {
 
 repositories {
 	// Loom adds the essential Fabric/Minecraft repositories automatically.
+	mavenCentral()
 }
 
 loom {
@@ -97,6 +98,9 @@ dependencies {
 	}
 	add(fabric_dependency_configuration, "net.fabricmc:fabric-loader:${loader_version}")
 	add(fabric_dependency_configuration, "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}")
+	testImplementation platform('org.junit:junit-bom:5.10.3')
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 processResources {
@@ -132,6 +136,10 @@ tasks.withType(JavaExec).configureEach {
 		languageVersion = JavaLanguageVersion.of(target_java_version)
 	}
 	jvmArgs('-Xmx2G')
+}
+
+tasks.withType(Test).configureEach {
+	useJUnitPlatform()
 }
 
 java {
@@ -170,6 +178,9 @@ def smokeTestRequiredMinecraftVersionProfiles = listProperty(
 def releaseOutputDirectory = layout.buildDirectory.dir("release/${minecraft_version_profile_id}")
 def releaseJarTaskProvider = tasks.named(release_jar_task_name)
 def releaseJarFile = releaseJarTaskProvider.flatMap { it.archiveFile }
+def archiveBaseName = project.base.archivesName.get().toString()
+def projectVersionString = version.toString()
+def smokeReleaseJarFileName = archiveBaseName + '-' + projectVersionString + '.jar'
 def gradleWrapperExecutable = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
 		? 'gradlew.bat'
 		: './gradlew'
@@ -308,15 +319,15 @@ tasks.register('verifyReleaseMetadata') {
 		def expectedMixinCompatibility = "JAVA_${target_java_version}"
 		def expectedLicense = 'LGPL-3.0-or-later'
 		def expectedBundledLicenses = [
-				"LICENSE_${project.base.archivesName.get()}".toString(),
-				"LICENSE-GPL-3.0_${project.base.archivesName.get()}".toString()
+				"LICENSE_${archiveBaseName}".toString(),
+				"LICENSE-GPL-3.0_${archiveBaseName}".toString()
 		]
 
 		if (fabricMetadata.id != 'hc-autopsy') {
 			throw new GradleException("${releaseJar.name} declares mod id ${fabricMetadata.id}, expected hc-autopsy.")
 		}
-		if (fabricMetadata.version != project.version.toString()) {
-			throw new GradleException("${releaseJar.name} declares version ${fabricMetadata.version}, expected ${project.version}.")
+		if (fabricMetadata.version != projectVersionString) {
+			throw new GradleException("${releaseJar.name} declares version ${fabricMetadata.version}, expected ${projectVersionString}.")
 		}
 		if (fabricMetadata.license != expectedLicense) {
 			throw new GradleException("${releaseJar.name} declares license ${fabricMetadata.license}, expected ${expectedLicense}.")
@@ -587,7 +598,7 @@ def registerSmokeTasks = { List<String> profiles, String taskPrefix, String buil
 
 					doFirst {
 						def releaseDir = releaseJarDirectory.get().asFile
-						def releaseJar = new File(releaseDir, "${project.base.archivesName.get()}-${version}.jar")
+						def releaseJar = new File(releaseDir, smokeReleaseJarFileName)
 						if (!releaseJar.isFile()) {
 							throw new GradleException("Smoke test ${taskName} is missing release jar: ${releaseJar}")
 						}

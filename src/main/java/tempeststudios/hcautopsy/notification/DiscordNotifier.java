@@ -49,7 +49,7 @@ public class DiscordNotifier {
      */
     public boolean isConfigured() {
         String webhookUrl = config.getDiscordWebhookUrl();
-        return webhookUrl != null && !webhookUrl.isBlank();
+        return config.isDiscordNotificationsEnabled() && webhookUrl != null && !webhookUrl.isBlank();
     }
 
     /**
@@ -71,6 +71,32 @@ public class DiscordNotifier {
                 HCAutopsy.LOGGER.info("Discord notification sent for wipe");
             } catch (Exception e) {
                 HCAutopsy.LOGGER.error("Failed to send Discord notification: {}", e.getMessage());
+            }
+        });
+    }
+
+    public CompletableFuture<Void> sendTestNotification(String sourceName, String worldName) {
+        if (!isConfigured()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return CompletableFuture.runAsync(() -> {
+            try {
+                JsonObject embed = new JsonObject();
+                embed.addProperty("title", "HC Autopsy Discord test");
+                embed.addProperty("description", "Webhook notifications are configured and reachable.");
+                embed.addProperty("color", 0x46B450);
+
+                JsonArray fields = new JsonArray();
+                fields.add(createField("Source", sourceName == null || sourceName.isBlank() ? "Unknown" : sourceName, true));
+                fields.add(createField("World", worldName == null || worldName.isBlank() ? "Unknown" : worldName, true));
+                embed.add("fields", fields);
+                embed.addProperty("timestamp", Instant.now().toString());
+
+                sendWebhook(embed);
+                HCAutopsy.LOGGER.info("Discord test notification sent");
+            } catch (Exception e) {
+                HCAutopsy.LOGGER.error("Failed to send Discord test notification: {}", e.getMessage());
             }
         });
     }

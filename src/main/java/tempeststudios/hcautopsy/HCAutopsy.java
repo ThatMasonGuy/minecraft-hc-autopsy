@@ -52,7 +52,7 @@ public class HCAutopsy implements ModInitializer {
 		// Register server lifecycle events
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			LOGGER.info("Server started - initializing run manager");
-			runManager = new RunManager(server, persistence, discordNotifier);
+			runManager = new RunManager(server, persistence, discordNotifier, config);
 			runManager.onServerStart();
 		});
 
@@ -102,5 +102,18 @@ public class HCAutopsy implements ModInitializer {
 	 */
 	public static DiscordNotifier getDiscordNotifier() {
 		return discordNotifier;
+	}
+
+	/**
+	 * Reload the mod configuration from disk and refresh components that depend on it.
+	 */
+	public static synchronized void reloadConfig() {
+		config = ModConfig.load();
+		discordNotifier = new DiscordNotifier(config);
+		if (runManager != null) {
+			runManager.setDiscordNotifier(discordNotifier);
+			runManager.setStatSaveDelayMs(config.getStatSaveDelayMs());
+		}
+		LOGGER.info("HC Autopsy configuration reloaded");
 	}
 }

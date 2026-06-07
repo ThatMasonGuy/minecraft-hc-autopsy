@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.0.0` is released. The preferred two-artifact
-release shape has passing dedicated-server smoke evidence from GitHub Actions
-candidate smoke validation run `26953422031`, was promoted to supported, and
-was published to Modrinth by workflow run `26956796078`.
+Current checkpoint: HC Autopsy `1.1.0` release hardening is in progress on
+branch `codex/hc-autopsy-1-1-hardening`. The preferred two-artifact `1.0.0`
+release shape remains supported, and `1.1.0` is additive rather than a breaking
+data-model release.
 
 ## Project Workflow
 
@@ -60,19 +60,30 @@ was published to Modrinth by workflow run `26956796078`.
 Implemented subcommands:
 
 - `/hcautopsy status`
+- `/hcautopsy players`
+- `/hcautopsy leaderboard playtime`
+- `/hcautopsy leaderboard deaths`
+- `/hcautopsy leaderboard walked`
+- `/hcautopsy leaderboard jumps`
 - `/hcautopsy run last`
 - `/hcautopsy run list`
 - `/hcautopsy run <id>`
 - `/hcautopsy run continue <reason>`
 - `/hcautopsy player <name> totals`
 - `/hcautopsy server totals`
+- `/hcautopsy recalc`
+- `/hcautopsy config reload`
+- `/hcautopsy discord test`
 
 Known command limitations:
 
 - `/hcautopsy run continue <reason>` currently allows console or command-block
-  sources only.
-- `/hcautopsy player <name> totals` resolves online players only. Offline name
-  lookup is not implemented yet.
+  sources, with a reflective legacy permission check for older operator-player
+  command sources. A full `1.21.11+` permission-object compat shim is still
+  pending before claiming operator-player admin access across all supported
+  profiles.
+- `/hcautopsy player <name> totals` now resolves online players and players in
+  the persisted HC Autopsy name cache.
 
 ## Recently Completed
 
@@ -135,6 +146,24 @@ Known command limitations:
 - Published Modrinth version `N4AixEjM` for `1.0.0+mc1.20-1.21.11`.
 - Published Modrinth version `KdsBXXNZ` for `1.0.0+mc26.1-26.2-pre-3`.
 - Tagged the exact publish commit as `v1.0.0` and created the GitHub Release.
+- Hardened wipe finalization so `/hcautopsy run continue <reason>` cannot race
+  against delayed stat snapshot capture.
+- Switched wipe stat capture to use the configured `statSaveDelayMs` and wait
+  for server-thread stat saves before reading vanilla stat JSON.
+- Added atomic writes for config, metadata, run snapshots, run aggregates, and
+  lifetime totals.
+- Added tolerant config and run metadata loading so malformed JSON is logged and
+  skipped or reset instead of crashing command/list paths.
+- Added a persisted player-name cache populated from joins and deaths.
+- Added cached-player listing, offline player totals, stat leaderboards,
+  lifetime recalculation, config reload, Discord test notification, and an
+  automatic in-game wipe summary broadcast.
+- Added focused JUnit coverage for stat aggregation and run continuation
+  metadata.
+- Expanded the dedicated-server smoke helper to verify expected `/hcautopsy`
+  subcommands, not only the root command literal.
+- Removed local Gradle 10 deprecation warnings from release metadata and smoke
+  task wiring.
 
 ## Current Compatibility Conclusion
 
@@ -290,12 +319,10 @@ candidate cannot honestly hold.
 
 ## Backlog
 
-- Add fixture-based validation for `AggregationEngine` before changing stat
-  aggregation behavior.
-- Add a name cache or offline profile lookup for
-  `/hcautopsy player <name> totals`.
-- Decide whether operator players should be able to run
-  `/hcautopsy run continue <reason>`.
+- Add a `1.21.11+` permission-object compat shim before documenting
+  operator-player admin commands as fully supported across all release profiles.
+- Add deeper dedicated-server smoke coverage that executes read-only
+  `/hcautopsy` subcommands, not only verifying registration.
 - Reconcile `LICENSE` with Fabric metadata before publishing.
 - Document any data migration if run metadata or lifetime stat formats change.
 - Keep README command documentation aligned with actual command behavior.

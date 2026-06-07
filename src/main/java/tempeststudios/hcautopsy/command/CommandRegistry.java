@@ -3,40 +3,41 @@ package tempeststudios.hcautopsy.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.Commands;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import tempeststudios.hcautopsy.HCAutopsy;
 import tempeststudios.hcautopsy.compat.TextEventCompat;
-import tempeststudios.hcautopsy.data.Run;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.RunState;
 import tempeststudios.hcautopsy.data.WipeCause;
+import tempeststudios.hcautopsy.lifecycle.RunManager;
+import tempeststudios.hcautopsy.notification.DiscordNotifier;
 import tempeststudios.hcautopsy.persistence.PersistenceManager;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Command registration and handlers for /hcautopsy.
- *
- * Commands:
- * - /hcautopsy status - Show current run status
- * - /hcautopsy run last - Show the last wiped run
- * - /hcautopsy run list - List all runs
- * - /hcautopsy run <id> - Show details for a specific run
- * - /hcautopsy run continue <reason> - Continue a wiped run
- * - /hcautopsy player <name> totals - Show player lifetime totals
- * - /hcautopsy server totals - Show server lifetime totals
  */
 public class CommandRegistry {
+    private static final int LIST_LIMIT = 10;
+    private static final int PLAYER_LIST_LIMIT = 20;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter
             .ofPattern("MMM dd, yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
@@ -49,43 +50,68 @@ public class CommandRegistry {
         this.aggregationEngine = new AggregationEngine();
     }
 
-    /**
-     * Register all commands.
-     */
     public void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess,
                          Commands.CommandSelection environment) {
         dispatcher.register(
                 Commands.literal("hcautopsy")
-                        .requires(source -> true) // All players can read
+                        .requires(source -> true)
+                        .executes(this::statusCommand)
                         .then(Commands.literal("status")
                                 .executes(this::statusCommand))
+                        .then(Commands.literal("players")
+                                .executes(this::playersCommand))
+                        .then(Commands.literal("leaderboard")
+                                .then(Commands.literal("playtime")
+                                        .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.PLAYTIME)))
+                                .then(Commands.literal("deaths")
+                                        .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.DEATHS)))
+                                .then(Commands.literal("walked")
+                                        .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.WALKED)))
+                                .then(Commands.literal("jumps")
+                                        .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.JUMPS))))
                         .then(Commands.literal("run")
                                 .then(Commands.literal("last")
                                         .executes(this::runLastCommand))
                                 .then(Commands.literal("list")
                                         .executes(this::runListCommand))
                                 .then(Commands.literal("continue")
-                                        .requires(CommandRegistry::requiresOp) // OP only
+                                        .requires(CommandRegistry::requiresOp)
                                         .then(Commands.argument("reason", StringArgumentType.greedyString())
                                                 .executes(this::runContinueCommand)))
                                 .then(Commands.argument("id", StringArgumentType.word())
+                                        .suggests(this::suggestRunIds)
                                         .executes(this::runDetailCommand)))
                         .then(Commands.literal("player")
                                 .then(Commands.argument("name", StringArgumentType.word())
+                                        .suggests(this::suggestPlayerNames)
                                         .then(Commands.literal("totals")
                                                 .executes(this::playerTotalsCommand))))
                         .then(Commands.literal("server")
                                 .then(Commands.literal("totals")
                                         .executes(this::serverTotalsCommand)))
+                        .then(Commands.literal("recalc")
+                                .requires(CommandRegistry::requiresOp)
+                                .executes(this::recalculateCommand))
+                        .then(Commands.literal("config")
+                                .requires(CommandRegistry::requiresOp)
+                                .then(Commands.literal("reload")
+                                        .executes(this::configReloadCommand)))
+                        .then(Commands.literal("discord")
+                                .requires(CommandRegistry::requiresOp)
+                                .then(Commands.literal("test")
+                                        .executes(this::discordTestCommand)))
         );
     }
 
-    /**
-     * /hcautopsy status - Show current run status.
-     */
     private int statusCommand(CommandContext<CommandSourceStack> ctx) {
-        RunMetadata activeRun = HCAutopsy.getRunManager().getActiveRun();
+        RunManager runManager = HCAutopsy.getRunManager();
+        if (runManager == null) {
+            ctx.getSource().sendSystemMessage(Component.literal("HC Autopsy is not attached to a running server yet.")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 1;
+        }
 
+        RunMetadata activeRun = runManager.getActiveRun();
         if (activeRun == null) {
             ctx.getSource().sendSystemMessage(Component.literal("No active run.").withStyle(ChatFormatting.YELLOW));
             return 1;
@@ -118,8 +144,7 @@ public class CommandRegistry {
 
         if (activeRun.getState() == RunState.WIPED && activeRun.getWipeCause() != null) {
             WipeCause cause = activeRun.getWipeCause();
-            message.append(Component.literal("\n\n").withStyle(ChatFormatting.RED))
-                    .append(Component.literal("☠ WIPED by ").withStyle(ChatFormatting.RED))
+            message.append(Component.literal("\n\nWIPED by ").withStyle(ChatFormatting.RED))
                     .append(Component.literal(cause.playerName()).withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
                     .append(Component.literal("\n"))
                     .append(Component.literal(cause.deathMessage()).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC));
@@ -129,9 +154,6 @@ public class CommandRegistry {
         return 1;
     }
 
-    /**
-     * /hcautopsy run last - Show the most recent wiped run.
-     */
     private int runLastCommand(CommandContext<CommandSourceStack> ctx) {
         RunMetadata lastWiped = persistence.getLastWipedRun();
 
@@ -144,9 +166,6 @@ public class CommandRegistry {
         return 1;
     }
 
-    /**
-     * /hcautopsy run list - List all runs.
-     */
     private int runListCommand(CommandContext<CommandSourceStack> ctx) {
         List<String> runIds = persistence.getAllRunIds();
 
@@ -159,22 +178,24 @@ public class CommandRegistry {
 
         int shown = 0;
         for (String runId : runIds) {
-            if (shown >= 10) {
-                message.append(Component.literal("... and " + (runIds.size() - 10) + " more\n").withStyle(ChatFormatting.GRAY));
+            if (shown >= LIST_LIMIT) {
+                message.append(Component.literal("... and " + (runIds.size() - LIST_LIMIT) + " more\n")
+                        .withStyle(ChatFormatting.GRAY));
                 break;
             }
 
             RunMetadata meta = persistence.loadMetadata(runId);
-            if (meta == null) continue;
+            if (meta == null) {
+                continue;
+            }
 
-            MutableComponent runEntry = Component.literal("• ")
+            MutableComponent runEntry = Component.literal("- ")
                     .append(Component.literal(meta.getWorldName()).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
                     .append(formatState(meta.getState()))
                     .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(formatDuration(meta.getDurationMs())).withStyle(ChatFormatting.AQUA));
 
-            // Make it clickable
             TextEventCompat.applyRunCommand(runEntry, "/hcautopsy run " + runId,
                     Component.literal("Click for details"));
 
@@ -186,23 +207,9 @@ public class CommandRegistry {
         return 1;
     }
 
-    /**
-     * /hcautopsy run <id> - Show details for a specific run.
-     */
     private int runDetailCommand(CommandContext<CommandSourceStack> ctx) {
         String runId = StringArgumentType.getString(ctx, "id");
-        RunMetadata meta = persistence.loadMetadata(runId);
-
-        if (meta == null) {
-            // Try partial match
-            List<String> runIds = persistence.getAllRunIds();
-            for (String id : runIds) {
-                if (id.contains(runId)) {
-                    meta = persistence.loadMetadata(id);
-                    break;
-                }
-            }
-        }
+        RunMetadata meta = findRun(runId);
 
         if (meta == null) {
             ctx.getSource().sendSystemMessage(Component.literal("Run not found: " + runId).withStyle(ChatFormatting.RED));
@@ -213,66 +220,54 @@ public class CommandRegistry {
         return 1;
     }
 
-    /**
-     * /hcautopsy run continue <reason> - Continue a wiped run.
-     */
     private int runContinueCommand(CommandContext<CommandSourceStack> ctx) {
         String reason = StringArgumentType.getString(ctx, "reason");
+        RunManager runManager = HCAutopsy.getRunManager();
+        if (runManager == null) {
+            ctx.getSource().sendSystemMessage(Component.literal("HC Autopsy is not ready yet.")
+                    .withStyle(ChatFormatting.RED));
+            return 0;
+        }
 
-        boolean success = HCAutopsy.getRunManager().continueRun(reason);
-
-        if (success) {
-            ctx.getSource().sendSystemMessage(Component.literal("✓ Run continued. Death struck from record.")
+        RunManager.ContinueResult result = runManager.continueRun(reason);
+        if (result == RunManager.ContinueResult.SUCCESS) {
+            ctx.getSource().sendSystemMessage(Component.literal("Run continued. Death struck from record.")
                     .withStyle(ChatFormatting.GREEN));
             ctx.getSource().sendSystemMessage(Component.literal("Reason: " + reason).withStyle(ChatFormatting.GRAY));
-        } else {
-            ctx.getSource().sendSystemMessage(Component.literal("✗ No wiped run to continue.")
-                    .withStyle(ChatFormatting.RED));
+            return 1;
+        }
+        if (result == RunManager.ContinueResult.WIPE_FINALIZING) {
+            ctx.getSource().sendSystemMessage(Component.literal("The wipe is still finalizing. Try again after snapshots finish.")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 0;
         }
 
-        return success ? 1 : 0;
+        ctx.getSource().sendSystemMessage(Component.literal("No wiped run to continue.")
+                .withStyle(ChatFormatting.RED));
+        return 0;
     }
 
-    /**
-     * /hcautopsy player <name> totals - Show player lifetime totals.
-     */
     private int playerTotalsCommand(CommandContext<CommandSourceStack> ctx) {
         String playerName = StringArgumentType.getString(ctx, "name");
-
-        // For now, we need to resolve name to UUID through online players or cached data
-        // This is a simplified implementation
-        UUID playerUuid = null;
-
-        // Try to find the player online
-        var player = ctx.getSource().getServer().getPlayerList().getPlayerByName(playerName);
-        if (player != null) {
-            playerUuid = player.getUUID();
-        }
+        UUID playerUuid = resolvePlayerUuid(ctx.getSource(), playerName);
 
         if (playerUuid == null) {
-            // Check all lifetime players
-            for (UUID uuid : persistence.getAllLifetimePlayerUuids()) {
-                // We'd need a name cache here - for now just show error
-            }
-            ctx.getSource().sendSystemMessage(Component.literal("Player not found. They must be online or have lifetime stats.")
+            ctx.getSource().sendSystemMessage(Component.literal("Player not found in online players or HC Autopsy's name cache.")
                     .withStyle(ChatFormatting.RED));
             return 0;
         }
 
         String stats = persistence.loadLifetimePlayerStats(playerUuid);
         if (stats == null) {
-            ctx.getSource().sendSystemMessage(Component.literal("No lifetime stats for " + playerName)
+            ctx.getSource().sendSystemMessage(Component.literal("No lifetime stats for " + playerDisplayName(playerUuid, playerName))
                     .withStyle(ChatFormatting.YELLOW));
             return 1;
         }
 
-        showStatsSummary(ctx.getSource(), "Lifetime Stats: " + playerName, stats);
+        showStatsSummary(ctx.getSource(), "Lifetime Stats: " + playerDisplayName(playerUuid, playerName), stats);
         return 1;
     }
 
-    /**
-     * /hcautopsy server totals - Show server lifetime totals.
-     */
     private int serverTotalsCommand(CommandContext<CommandSourceStack> ctx) {
         String stats = persistence.loadServerLifetimeStats();
 
@@ -286,7 +281,94 @@ public class CommandRegistry {
         return 1;
     }
 
-    // ==================== Helper Methods ====================
+    private int playersCommand(CommandContext<CommandSourceStack> ctx) {
+        List<String> names = persistence.getKnownPlayerNames();
+        if (names.isEmpty()) {
+            ctx.getSource().sendSystemMessage(Component.literal("No cached HC Autopsy players yet.")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 1;
+        }
+
+        MutableComponent message = Component.literal("=== Cached Players (" + names.size() + ") ===\n")
+                .withStyle(ChatFormatting.GOLD);
+        int shown = 0;
+        for (String name : names) {
+            if (shown >= PLAYER_LIST_LIMIT) {
+                message.append(Component.literal("... and " + (names.size() - PLAYER_LIST_LIMIT) + " more\n")
+                        .withStyle(ChatFormatting.GRAY));
+                break;
+            }
+            message.append(Component.literal("- " + name + "\n").withStyle(ChatFormatting.WHITE));
+            shown++;
+        }
+        ctx.getSource().sendSystemMessage(message);
+        return 1;
+    }
+
+    private int leaderboardCommand(CommandContext<CommandSourceStack> ctx, LeaderboardStat stat) {
+        List<LeaderboardEntry> entries = new ArrayList<>();
+        for (UUID uuid : persistence.getAllLifetimePlayerUuids()) {
+            String stats = persistence.loadLifetimePlayerStats(uuid);
+            Long value = aggregationEngine.extractStat(stats, stat.path);
+            if (value != null) {
+                entries.add(new LeaderboardEntry(uuid, value));
+            }
+        }
+
+        if (entries.isEmpty()) {
+            ctx.getSource().sendSystemMessage(Component.literal("No lifetime data for " + stat.label + " yet.")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 1;
+        }
+
+        entries.sort(Comparator.comparingLong(LeaderboardEntry::value).reversed());
+
+        MutableComponent message = Component.literal("=== " + stat.label + " Leaderboard ===\n")
+                .withStyle(ChatFormatting.GOLD);
+        int rank = 1;
+        for (LeaderboardEntry entry : entries.stream().limit(LIST_LIMIT).toList()) {
+            message.append(Component.literal(rank + ". ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(playerDisplayName(entry.playerUuid(), null)).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(stat.format(entry.value())).withStyle(ChatFormatting.AQUA))
+                    .append(Component.literal("\n"));
+            rank++;
+        }
+
+        ctx.getSource().sendSystemMessage(message);
+        return 1;
+    }
+
+    private int recalculateCommand(CommandContext<CommandSourceStack> ctx) {
+        persistence.recalculateLifetimeStats();
+        ctx.getSource().sendSystemMessage(Component.literal("HC Autopsy lifetime totals recalculated from wiped runs.")
+                .withStyle(ChatFormatting.GREEN));
+        return 1;
+    }
+
+    private int configReloadCommand(CommandContext<CommandSourceStack> ctx) {
+        HCAutopsy.reloadConfig();
+        ctx.getSource().sendSystemMessage(Component.literal("HC Autopsy config reloaded.")
+                .withStyle(ChatFormatting.GREEN));
+        return 1;
+    }
+
+    private int discordTestCommand(CommandContext<CommandSourceStack> ctx) {
+        DiscordNotifier notifier = HCAutopsy.getDiscordNotifier();
+        if (notifier == null || !notifier.isConfigured()) {
+            ctx.getSource().sendSystemMessage(Component.literal("Discord notifications are disabled or missing a webhook URL.")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 0;
+        }
+
+        RunManager runManager = HCAutopsy.getRunManager();
+        RunMetadata activeRun = runManager == null ? null : runManager.getActiveRun();
+        String worldName = activeRun == null ? "unknown" : activeRun.getWorldName();
+        notifier.sendTestNotification(sourceName(ctx.getSource()), worldName);
+        ctx.getSource().sendSystemMessage(Component.literal("Discord test notification queued.")
+                .withStyle(ChatFormatting.GREEN));
+        return 1;
+    }
 
     private void showRunDetails(CommandSourceStack source, RunMetadata meta) {
         MutableComponent message = Component.literal("=== Run: " + meta.getWorldName() + " ===\n").withStyle(ChatFormatting.GOLD);
@@ -319,7 +401,7 @@ public class CommandRegistry {
 
         if (meta.getWipeCause() != null) {
             WipeCause cause = meta.getWipeCause();
-            message.append(Component.literal("\n☠ Death: ").withStyle(ChatFormatting.RED))
+            message.append(Component.literal("\nDeath: ").withStyle(ChatFormatting.RED))
                     .append(Component.literal(cause.playerName()).withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
                     .append(Component.literal("\n"))
                     .append(Component.literal(cause.deathMessage()).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC))
@@ -329,11 +411,10 @@ public class CommandRegistry {
         }
 
         if (!meta.getContinueHistory().isEmpty()) {
-            message.append(Component.literal("\n\n⚠ Run was continued " + meta.getContinueHistory().size() + " time(s)")
+            message.append(Component.literal("\n\nRun was continued " + meta.getContinueHistory().size() + " time(s)")
                     .withStyle(ChatFormatting.YELLOW));
         }
 
-        // Add aggregated stats summary if available
         String aggregated = persistence.loadRunAggregated(meta.getRunId());
         if (aggregated != null) {
             message.append(Component.literal("\n\n"));
@@ -350,39 +431,93 @@ public class CommandRegistry {
     }
 
     private void appendStatsSummary(MutableComponent message, String stats) {
-        // Play time
-        Long playTime = aggregationEngine.extractStat(stats, "stats.minecraft:custom.minecraft:play_time");
+        Long playTime = aggregationEngine.extractStat(stats, LeaderboardStat.PLAYTIME.path);
         if (playTime != null) {
-            long seconds = playTime / 20;
             message.append(Component.literal("Playtime: ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(formatDuration(seconds * 1000)).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(formatDuration((playTime / 20) * 1000)).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal("\n"));
         }
 
-        // Deaths
-        Long deaths = aggregationEngine.extractStat(stats, "stats.minecraft:custom.minecraft:deaths");
+        Long deaths = aggregationEngine.extractStat(stats, LeaderboardStat.DEATHS.path);
         if (deaths != null) {
             message.append(Component.literal("Deaths: ").withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(String.format("%,d", deaths)).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal("\n"));
         }
 
-        // Distance walked
-        Long distance = aggregationEngine.extractStat(stats, "stats.minecraft:custom.minecraft:walk_one_cm");
+        Long distance = aggregationEngine.extractStat(stats, LeaderboardStat.WALKED.path);
         if (distance != null) {
-            double km = distance / 100000.0;
             message.append(Component.literal("Distance Walked: ").withStyle(ChatFormatting.GRAY))
-                    .append(Component.literal(String.format("%.1f km", km)).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(LeaderboardStat.WALKED.format(distance)).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal("\n"));
         }
 
-        // Jumps
-        Long jumps = aggregationEngine.extractStat(stats, "stats.minecraft:custom.minecraft:jump");
+        Long jumps = aggregationEngine.extractStat(stats, LeaderboardStat.JUMPS.path);
         if (jumps != null) {
             message.append(Component.literal("Jumps: ").withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(String.format("%,d", jumps)).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal("\n"));
         }
+    }
+
+    private RunMetadata findRun(String runId) {
+        RunMetadata meta = persistence.loadMetadata(runId);
+        if (meta != null) {
+            return meta;
+        }
+
+        for (String id : persistence.getAllRunIds()) {
+            if (id.contains(runId)) {
+                return persistence.loadMetadata(id);
+            }
+        }
+        return null;
+    }
+
+    private UUID resolvePlayerUuid(CommandSourceStack source, String playerName) {
+        ServerPlayer onlinePlayer = source.getServer().getPlayerList().getPlayerByName(playerName);
+        if (onlinePlayer != null) {
+            persistence.rememberPlayer(onlinePlayer.getUUID(), onlinePlayer.getName().getString());
+            return onlinePlayer.getUUID();
+        }
+        return persistence.findKnownPlayerUuidByName(playerName);
+    }
+
+    private String playerDisplayName(UUID playerUuid, String fallback) {
+        String knownName = persistence.getKnownPlayerName(playerUuid);
+        if (knownName != null && !knownName.isBlank()) {
+            return knownName;
+        }
+        return fallback == null || fallback.isBlank() ? playerUuid.toString() : fallback;
+    }
+
+    private CompletableFuture<Suggestions> suggestPlayerNames(
+            CommandContext<CommandSourceStack> ctx,
+            SuggestionsBuilder builder
+    ) {
+        String prefix = builder.getRemainingLowerCase();
+        List<String> suggestions = new ArrayList<>(persistence.getKnownPlayerNames());
+        for (ServerPlayer player : ctx.getSource().getServer().getPlayerList().getPlayers()) {
+            suggestions.add(player.getName().getString());
+        }
+
+        suggestions.stream()
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(prefix))
+                .forEach(builder::suggest);
+        return builder.buildFuture();
+    }
+
+    private CompletableFuture<Suggestions> suggestRunIds(
+            CommandContext<CommandSourceStack> ctx,
+            SuggestionsBuilder builder
+    ) {
+        String prefix = builder.getRemainingLowerCase();
+        persistence.getAllRunIds().stream()
+                .filter(runId -> runId.toLowerCase(Locale.ROOT).contains(prefix))
+                .forEach(builder::suggest);
+        return builder.buildFuture();
     }
 
     private Component formatState(RunState state) {
@@ -410,13 +545,82 @@ public class CommandRegistry {
         }
     }
 
-    /**
-     * Permission check for OP-level commands.
-     * Returns true if the source is from console/command block or an OP player.
-     */
+    private String sourceName(CommandSourceStack source) {
+        try {
+            return source.getTextName();
+        } catch (RuntimeException e) {
+            return "command source";
+        }
+    }
+
     private static boolean requiresOp(CommandSourceStack source) {
-        // For now, only allow console commands for admin operations
-        // Players can be added later once we verify the correct API
-        return source.getEntity() == null;
+        if (source.getEntity() == null) {
+            return true;
+        }
+        return hasLegacyPermissionLevel(source, 2);
+    }
+
+    private static boolean hasLegacyPermissionLevel(CommandSourceStack source, int permissionLevel) {
+        for (String methodName : List.of("hasPermission", "method_9259")) {
+            try {
+                Object result = source.getClass().getMethod(methodName, int.class).invoke(source, permissionLevel);
+                if (result instanceof Boolean permitted) {
+                    return permitted;
+                }
+            } catch (ReflectiveOperationException | RuntimeException ignored) {
+            }
+        }
+        return false;
+    }
+
+    private enum LeaderboardStat {
+        PLAYTIME("Playtime", "stats.minecraft:custom.minecraft:play_time", ValueFormat.TICKS),
+        DEATHS("Deaths", "stats.minecraft:custom.minecraft:deaths", ValueFormat.NUMBER),
+        WALKED("Distance Walked", "stats.minecraft:custom.minecraft:walk_one_cm", ValueFormat.CENTIMETERS),
+        JUMPS("Jumps", "stats.minecraft:custom.minecraft:jump", ValueFormat.NUMBER);
+
+        private final String label;
+        private final String path;
+        private final ValueFormat format;
+
+        LeaderboardStat(String label, String path, ValueFormat format) {
+            this.label = label;
+            this.path = path;
+            this.format = format;
+        }
+
+        private String format(long value) {
+            return switch (format) {
+                case TICKS -> formatDurationStatic((value / 20) * 1000);
+                case CENTIMETERS -> String.format("%.1f km", value / 100000.0);
+                case NUMBER -> String.format("%,d", value);
+            };
+        }
+    }
+
+    private enum ValueFormat {
+        TICKS,
+        CENTIMETERS,
+        NUMBER
+    }
+
+    private record LeaderboardEntry(UUID playerUuid, long value) {
+    }
+
+    private static String formatDurationStatic(long ms) {
+        long seconds = ms / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+
+        if (days > 0) {
+            return String.format("%dd %dh %dm", days, hours % 24, minutes % 60);
+        } else if (hours > 0) {
+            return String.format("%dh %dm", hours, minutes % 60);
+        } else if (minutes > 0) {
+            return String.format("%dm %ds", minutes, seconds % 60);
+        } else {
+            return String.format("%ds", seconds);
+        }
     }
 }

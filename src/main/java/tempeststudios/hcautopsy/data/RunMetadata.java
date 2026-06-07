@@ -221,13 +221,15 @@ public class RunMetadata {
         }
 
         Set<UUID> participatingPlayers = new HashSet<>();
-        JsonArray playersArray = json.getAsJsonArray("participatingPlayers");
-        for (var element : playersArray) {
-            participatingPlayers.add(UUID.fromString(element.getAsString()));
+        if (json.has("participatingPlayers") && json.get("participatingPlayers").isJsonArray()) {
+            JsonArray playersArray = json.getAsJsonArray("participatingPlayers");
+            for (var element : playersArray) {
+                participatingPlayers.add(UUID.fromString(element.getAsString()));
+            }
         }
 
         List<ContinueRecord> continueHistory = new ArrayList<>();
-        if (json.has("continueHistory")) {
+        if (json.has("continueHistory") && json.get("continueHistory").isJsonArray()) {
             JsonArray continueArray = json.getAsJsonArray("continueHistory");
             for (var element : continueArray) {
                 continueHistory.add(ContinueRecord.fromJson(element.getAsJsonObject()));

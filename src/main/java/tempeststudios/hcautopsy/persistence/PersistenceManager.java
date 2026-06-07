@@ -11,9 +11,11 @@ import tempeststudios.hcautopsy.data.RunState;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
 
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -47,16 +49,21 @@ public class PersistenceManager {
     private final Path runsDir;
     private final Path lifetimeDir;
     private final Path lifetimePlayersDir;
+    private final Path playerNamesPath;
     private final AggregationEngine aggregationEngine;
+    private final Map<UUID, String> playerNameCache;
 
     public PersistenceManager() {
         this.baseDir = FabricLoader.getInstance().getConfigDir().resolve("hc-autopsy");
         this.runsDir = baseDir.resolve("runs");
         this.lifetimeDir = baseDir.resolve("lifetime");
         this.lifetimePlayersDir = lifetimeDir.resolve("players");
+        this.playerNamesPath = lifetimeDir.resolve("player-names.json");
         this.aggregationEngine = new AggregationEngine();
+        this.playerNameCache = new HashMap<>();
 
         initializeDirectories();
+        loadPlayerNameCache();
     }
 
     /**
@@ -159,7 +166,7 @@ public class PersistenceManager {
     public void saveMetadata(RunMetadata metadata) {
         Path path = getMetadataPath(metadata.getRunId());
         try {
-            Files.writeString(path, metadata.toJson());
+            writeStringAtomic(path, metadata.toJson());
         } catch (IOException e) {
             HCAutopsy.LOGGER.error("Failed to save run metadata: {}", e.getMessage());
         }
@@ -177,7 +184,7 @@ public class PersistenceManager {
         try {
             String json = Files.readString(path);
             return RunMetadata.fromJson(json);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             HCAutopsy.LOGGER.error("Failed to load run metadata: {}", e.getMessage());
             return null;
         }
@@ -189,7 +196,7 @@ public class PersistenceManager {
     public void savePlayerSnapshot(String runId, UUID playerUuid, String rawStats) {
         Path path = getPlayerSnapshotPath(runId, playerUuid);
         try {
-            Files.writeString(path, rawStats);
+            writeStringAtomic(path, rawStats);
         } catch (IOException e) {
             HCAutopsy.LOGGER.error("Failed to save player snapshot for {}: {}", playerUuid, e.getMessage());
         }
@@ -247,7 +254,7 @@ public class PersistenceManager {
     public void saveRunAggregated(String runId, String aggregatedStats) {
         Path path = getRunAggregatedPath(runId);
         try {
-            Files.writeString(path, aggregatedStats);
+            writeStringAtomic(path, aggregatedStats);
         } catch (IOException e) {
             HCAutopsy.LOGGER.error("Failed to save run aggregated stats: {}", e.getMessage());
         }
@@ -322,8 +329,20 @@ public class PersistenceManager {
             HCAutopsy.LOGGER.error("Failed to list runs: {}", e.getMessage());
         }
 
-        // Sort by timestamp (newest first) - timestamps are embedded in run IDs
-        runIds.sort(Comparator.reverseOrder());
+        runIds.sort((left, right) -> {
+            RunMetadata leftMetadata = loadMetadata(left);
+            RunMetadata rightMetadata = loadMetadata(right);
+            if (leftMetadata != null && rightMetadata != null) {
+                return Long.compare(rightMetadata.getStartedAt(), leftMetadata.getStartedAt());
+            }
+            if (leftMetadata != null) {
+                return -1;
+            }
+            if (rightMetadata != null) {
+                return 1;
+            }
+            return right.compareTo(left);
+        });
         return runIds;
     }
 
@@ -376,7 +395,7 @@ public class PersistenceManager {
     public void saveLifetimePlayerStats(UUID playerUuid, String stats) {
         Path path = getLifetimePlayerPath(playerUuid);
         try {
-            Files.writeString(path, stats);
+            writeStringAtomic(path, stats);
         } catch (IOException e) {
             HCAutopsy.LOGGER.error("Failed to save lifetime stats for {}: {}", playerUuid, e.getMessage());
         }
@@ -437,7 +456,7 @@ public class PersistenceManager {
         String newLifetime = aggregationEngine.aggregate(toAggregate);
 
         try {
-            Files.writeString(getServerLifetimePath(), newLifetime);
+            writeStringAtomic(getServerLifetimePath(), newLifetime);
         } catch (IOException e) {
             HCAutopsy.LOGGER.error("Failed to save server lifetime stats: {}", e.getMessage());
         }
@@ -518,7 +537,7 @@ public class PersistenceManager {
         if (!allSnapshots.isEmpty()) {
             String serverLifetime = aggregationEngine.aggregate(allSnapshots);
             try {
-                Files.writeString(getServerLifetimePath(), serverLifetime);
+                writeStringAtomic(getServerLifetimePath(), serverLifetime);
             } catch (IOException e) {
                 HCAutopsy.LOGGER.error("Failed to save recalculated server lifetime stats: {}", e.getMessage());
             }
@@ -540,10 +559,94 @@ public class PersistenceManager {
         return baseDir;
     }
 
+    public synchronized void rememberPlayer(UUID playerUuid, String playerName) {
+        if (playerUuid == null || playerName == null || playerName.isBlank()) {
+            return;
+        }
+
+        String previousName = playerNameCache.put(playerUuid, playerName);
+        if (!playerName.equals(previousName)) {
+            savePlayerNameCache();
+        }
+    }
+
+    public synchronized String getKnownPlayerName(UUID playerUuid) {
+        return playerNameCache.get(playerUuid);
+    }
+
+    public synchronized UUID findKnownPlayerUuidByName(String playerName) {
+        if (playerName == null || playerName.isBlank()) {
+            return null;
+        }
+
+        for (Map.Entry<UUID, String> entry : playerNameCache.entrySet()) {
+            if (entry.getValue().equalsIgnoreCase(playerName)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    public synchronized List<String> getKnownPlayerNames() {
+        return playerNameCache.values().stream()
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
     /**
      * Check if any runs exist.
      */
     public boolean hasAnyRuns() {
         return !getAllRunIds().isEmpty();
+    }
+
+    private void loadPlayerNameCache() {
+        if (!Files.exists(playerNamesPath)) {
+            return;
+        }
+
+        try {
+            JsonObject json = GSON.fromJson(Files.readString(playerNamesPath), JsonObject.class);
+            if (json == null) {
+                return;
+            }
+            for (Map.Entry<String, com.google.gson.JsonElement> entry : json.entrySet()) {
+                try {
+                    playerNameCache.put(UUID.fromString(entry.getKey()), entry.getValue().getAsString());
+                } catch (IllegalArgumentException ignored) {
+                }
+            }
+        } catch (IOException | RuntimeException e) {
+            HCAutopsy.LOGGER.error("Failed to load player name cache: {}", e.getMessage());
+        }
+    }
+
+    private synchronized void savePlayerNameCache() {
+        JsonObject json = new JsonObject();
+        playerNameCache.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> entry.getValue().toLowerCase(Locale.ROOT)))
+                .forEach(entry -> json.addProperty(entry.getKey().toString(), entry.getValue()));
+
+        try {
+            writeStringAtomic(playerNamesPath, GSON.toJson(json));
+        } catch (IOException e) {
+            HCAutopsy.LOGGER.error("Failed to save player name cache: {}", e.getMessage());
+        }
+    }
+
+    private void writeStringAtomic(Path path, String content) throws IOException {
+        Files.createDirectories(path.getParent());
+        Path tempPath = Files.createTempFile(path.getParent(), path.getFileName().toString(), ".tmp");
+        try {
+            Files.writeString(tempPath, content);
+            try {
+                Files.move(tempPath, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempPath);
+        }
     }
 }
