@@ -9,6 +9,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 - Recorded the completed `1.2.0` Modrinth publish, GitHub validation, GitHub
   Release, and merged-branch cleanup details.
+- Recorded the completed `1.2.1` Modrinth publish, GitHub validation, live
+  project-page sync, and GitHub Release details.
 
 ## 1.2.1 - 2026-06-13
 

@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy is preparing `1.2.1` from the published `1.2.0`
-base. This patch fixes the delayed in-game wipe summary broadcast crash path
-and moves HC Autopsy config/data into a launcher-agnostic Tempest Studios
-app-data folder with guarded first-launch migration from `config/hc-autopsy/`.
+Current checkpoint: HC Autopsy `1.2.1` is published on Modrinth and GitHub.
+The release fixes the delayed in-game wipe summary broadcast crash path and
+moves HC Autopsy config/data into a launcher-agnostic Tempest Studios app-data
+folder with guarded first-launch migration from `config/hc-autopsy/`.
 
 ## Project Workflow
 
@@ -253,6 +253,20 @@ Known command limitations:
 - Added intermediary runtime fallbacks to `TextEventCompat` so clickable
   command links and hover text keep working in the remapped `1.20-1.21.11`
   release jar.
+- Pushed `main` to `f2d78fa95d2b7eff5fe2192b9aa542c86eb0327c` and passed
+  GitHub build workflow run `27429173534`.
+- Updated the live Modrinth project page from `gradle/modrinth-project-pages.md`
+  and verified the app-data storage copy read back from the API.
+- Published HC Autopsy `1.2.1` to Modrinth through GitHub Actions workflow run
+  `27429181718`. The run repeated the full supported dedicated-server smoke
+  matrix with 23 `HCAUTOPSY_SERVER_SMOKE_TEST_PASS` markers and
+  `commandsExecuted=true`.
+- Published Modrinth version `OubGKHg0` for
+  `1.2.1+mc1.20-1.21.11`.
+- Published Modrinth version `HPDTTcI3` for
+  `1.2.1+mc26.1-26.2-pre-3`.
+- Tagged the exact publish commit as `v1.2.1` and created the GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.1`.
 
 ## Current Compatibility Conclusion
 

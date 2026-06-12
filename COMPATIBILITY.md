@@ -417,7 +417,7 @@ Release `1.2.0` evidence from 2026-06-07:
 - The exact publish commit is tagged `v1.2.0` and has a GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`.
 
-Local `1.2.1` patch evidence from 2026-06-13:
+Local and publish `1.2.1` patch evidence from 2026-06-13:
 
 - `.\gradlew.bat build --no-daemon --console=plain` passed for the default
   profile and ran the focused JUnit tests for app-data path resolution,
@@ -425,11 +425,18 @@ Local `1.2.1` patch evidence from 2026-06-13:
 - `.\gradlew.bat buildAllVersions --no-daemon --console=plain` passed and
   verified `hc-autopsy-1.2.1.jar` release metadata for both supported profile
   jars.
-- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11,26.1-26.2-pre-3" "-Phcautopsy_smoke_game_versions=1.20,1.21.11,26.2-pre-3" --no-daemon --console=plain`
-  passed for the oldest supported runtime, the newest pre-26 runtime, and
-  `26.2-pre-3`. The smoke launches used isolated `hcautopsy.dataDir` app-data
-  folders and exercised wipe-summary broadcast construction and server-thread
-  dispatch.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11,26.1-26.2-pre-3" "-Phcautopsy_smoke_game_versions=1.20,1.21.5,1.21.11,26.2-pre-3" --no-daemon --console=plain`
+  passed for the oldest supported runtime, the text-event shape boundary, the
+  newest pre-26 runtime, and `26.2-pre-3`. The smoke launches used isolated
+  `hcautopsy.dataDir` app-data folders and exercised wipe-summary broadcast
+  construction and server-thread dispatch.
+- GitHub Actions build run `27429173534` passed from `main` at commit
+  `f2d78fa95d2b7eff5fe2192b9aa542c86eb0327c`.
+- GitHub Actions publish run `27429181718` repeated the supported smoke matrix,
+  published `1.2.1+mc1.20-1.21.11` as Modrinth version `OubGKHg0`, and
+  published `1.2.1+mc26.1-26.2-pre-3` as Modrinth version `HPDTTcI3`.
+- The exact publish commit is tagged `v1.2.1` and has a GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.1`.
 
 ## Immediate Implementation Notes
 
