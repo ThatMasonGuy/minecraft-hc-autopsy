@@ -22,6 +22,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   contain HC Autopsy data.
 - Added `PlayerMessageCompat` for wipe-summary player message delivery across
   supported runtime method shapes.
+- Added intermediary runtime fallbacks to `TextEventCompat` for clickable
+  command links and hover text in the remapped `1.20-1.21.11` jar.
 - Expanded server smoke verification to exercise wipe-summary broadcast
   construction and server-thread dispatch.
 - Added focused tests for app-data path resolution, tracked-data detection, and
@@ -39,6 +41,9 @@ release notes in `gradle/release-notes/<mod_version>.md`.
   crash fix patch.
 - Updated README, compatibility notes, smoke-test docs, and Modrinth
   project-page source copy for the new app-data storage location.
+- Ran a pre-publish symbol audit across every exact supported runtime for
+  death handling, player stats, world paths, command output, player messages,
+  permissions, and text click/hover events.
 
 ## 1.2.0 - 2026-06-07
 

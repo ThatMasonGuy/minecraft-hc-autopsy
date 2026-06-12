@@ -15,6 +15,12 @@ dedicated-server smoke validation on every exact Minecraft runtime they claim.
 GitHub Actions candidate smoke validation run `26953422031` is the promotion
 evidence for the exact-version runtime matrix.
 
+A `1.2.1` pre-publish symbol audit also checked every exact supported runtime
+locally for death handling, player stats, world paths, command output, player
+messages, permissions, and text click/hover events. That pass found one
+non-crashing gap: reflection strings in `TextEventCompat` needed intermediary
+runtime fallbacks for the remapped `1.20-1.21.11` jar.
+
 Fallback donor split profiles still exist for deeper probing, but they are not
 the recommended release shape. Do not add or promote future profiles until the
 exact jar has built, verified metadata, passed binary runtime checks, launched
@@ -114,7 +120,7 @@ against anchor versions including `1.20`, `1.21.10`, `1.21.11`, `26.1.2`, and
 | Fabric lifecycle | `SERVER_STARTED` and `SERVER_STOPPING` are present across inspected Fabric API anchors. | Direct registration is probably fine. |
 | Fabric join event | `ServerPlayConnectionEvents.JOIN` is present across inspected Fabric API anchors. | Direct registration is probably fine. |
 | Command registration | `CommandRegistrationCallback.register(dispatcher, registryAccess, environment)` is stable in inspected anchors. | Official-name command source imports are the bigger change. |
-| Text click/hover events | `1.20` uses class constructors; `1.21.11+` and `26.x` use newer interface/subtype shapes. | `TextEventCompat` now constructs events reflectively while leaving command rendering shared. |
+| Text click/hover events | `1.20-1.21.4` uses class constructors, `1.21.5-1.21.11` uses intermediary interface/subtype shapes, and `26.x` uses the official interface/subtype names. | `TextEventCompat` now tries official and intermediary class names for both legacy and modern event construction. |
 | Online player name lookup | `PlayerList#getPlayerByName(String)` exists across inspected anchors. | Use `getPlayerByName` instead of the newer overloaded `getPlayer(String)` call. |
 
 ## HCAutopsy API Surface

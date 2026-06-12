@@ -33,6 +33,9 @@ app-data folder with guarded first-launch migration from `config/hc-autopsy/`.
   gamemaster or higher across the supported profiles.
 - In-game wipe summary broadcasts use `PlayerMessageCompat` so player message
   delivery can fall back across supported runtime method shapes.
+- Clickable and hoverable command output uses `TextEventCompat` with official
+  and intermediary runtime class-name fallbacks for the legacy constructor API
+  and newer record-style text event API.
 - The dedicated-server smoke helper now verifies registration and executes
   representative `/hcautopsy` command paths from a server command source, then
   exercises wipe-summary broadcast construction and server-thread dispatch.
@@ -239,9 +242,17 @@ Known command limitations:
 - Verified the `1.2.1` patch locally with `git diff --check`,
   `.\gradlew.bat build --no-daemon --console=plain`,
   `.\gradlew.bat buildAllVersions --no-daemon --console=plain`, and selected
-  dedicated-server smoke launches for `1.20`, `1.21.11`, and `26.2-pre-3`.
+  dedicated-server smoke launches for `1.20`, `1.21.5`, `1.21.11`, and
+  `26.2-pre-3`.
   The smoke runs passed with isolated `hcautopsy.dataDir` app-data folders
   under `build/smoke-run/`.
+- Ran a pre-publish compatibility pass across all exact supported game
+  versions. The symbol audit covered death handling, player stats, world paths,
+  command output, player messages, permissions, and text click/hover events for
+  all `1.20-1.21.11` and `26.1-26.2-pre-3` runtime targets.
+- Added intermediary runtime fallbacks to `TextEventCompat` so clickable
+  command links and hover text keep working in the remapped `1.20-1.21.11`
+  release jar.
 
 ## Current Compatibility Conclusion
 
