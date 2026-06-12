@@ -11,6 +11,7 @@ import tempeststudios.hcautopsy.config.ModConfig;
 import tempeststudios.hcautopsy.lifecycle.RunManager;
 import tempeststudios.hcautopsy.notification.DiscordNotifier;
 import tempeststudios.hcautopsy.persistence.PersistenceManager;
+import tempeststudios.hcautopsy.storage.HCAutopsyData;
 
 /**
  * HC Autopsy - Hardcore Minecraft Analytics and Postmortem System
@@ -33,6 +34,9 @@ public class HCAutopsy implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("HC Autopsy initializing...");
+
+		// Import existing launcher-local data before config and persistence load.
+		HCAutopsyData.migrateLegacyConfigDataIfNeeded();
 
 		// Load configuration
 		config = ModConfig.load();

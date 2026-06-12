@@ -10,6 +10,36 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Recorded the completed `1.2.0` Modrinth publish, GitHub validation, GitHub
   Release, and merged-branch cleanup details.
 
+## 1.2.1 - 2026-06-13
+
+### Added
+
+- Added launcher-agnostic Tempest Studios app-data storage for HC Autopsy
+  config, run history, player snapshots, lifetime totals, and player-name
+  cache.
+- Added guarded first-launch migration from the old launcher-local
+  `config/hc-autopsy/` folder when the new app-data folder does not already
+  contain HC Autopsy data.
+- Added `PlayerMessageCompat` for wipe-summary player message delivery across
+  supported runtime method shapes.
+- Expanded server smoke verification to exercise wipe-summary broadcast
+  construction and server-thread dispatch.
+- Added focused tests for app-data path resolution, tracked-data detection, and
+  player message compatibility fallbacks.
+
+### Fixed
+
+- Prevented the delayed in-game wipe summary broadcast from crashing wipe
+  finalization when player message delivery APIs drift or the server is no
+  longer accepting queued tasks.
+
+### Changed
+
+- Bumped `mod_version` to `1.2.1` for the storage migration and wipe-summary
+  crash fix patch.
+- Updated README, compatibility notes, smoke-test docs, and Modrinth
+  project-page source copy for the new app-data storage location.
+
 ## 1.2.0 - 2026-06-07
 
 ### Added

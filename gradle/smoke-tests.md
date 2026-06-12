@@ -33,6 +33,7 @@ Each automated dedicated-server smoke launch should:
 - verify the expected `/hcautopsy` subcommands are registered
 - execute representative `/hcautopsy` command paths from a server command
   source, including admin-gated commands
+- exercise wipe-summary broadcast construction and server-thread dispatch
 - verify config and persistence initialization
 - verify an active run was created or resumed
 - log a clear pass marker such as `HCAUTOPSY_SERVER_SMOKE_TEST_PASS`
@@ -85,6 +86,10 @@ Run directories should be isolated under:
 ```text
 build/smoke-run/
 ```
+
+Smoke launches set `hcautopsy.dataDir` to a directory inside the smoke run so
+app-data storage checks do not touch the user's real Tempest Studios data
+folder.
 
 ## Promotion Rule
 

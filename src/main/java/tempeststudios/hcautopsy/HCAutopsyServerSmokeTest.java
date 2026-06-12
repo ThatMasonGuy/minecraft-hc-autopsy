@@ -84,6 +84,7 @@ public final class HCAutopsyServerSmokeTest {
         requireCommand(server, "hcautopsy", "config", "reload");
         requireCommand(server, "hcautopsy", "discord", "test");
         executeSmokeCommands(server);
+        exerciseWipeSummaryBroadcast();
     }
 
     private static void requireCommand(MinecraftServer server, String... commandPath) {
@@ -146,6 +147,13 @@ public final class HCAutopsyServerSmokeTest {
         } catch (ReflectiveOperationException | RuntimeException e) {
             throw new IllegalStateException("Server smoke test could not execute /" + command + ".", e);
         }
+    }
+
+    private static void exerciseWipeSummaryBroadcast() {
+        if (HCAutopsy.getRunManager() == null) {
+            throw new IllegalStateException("Server smoke test could not exercise wipe summary without a run manager.");
+        }
+        HCAutopsy.getRunManager().broadcastSmokeTestWipeSummary();
     }
 
     private static Method findPerformPrefixedCommand(Object commands, Object source) throws NoSuchMethodException {

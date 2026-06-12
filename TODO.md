@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.2.0` is published from `main`. The
-compatibility shim release adds admin command permission support for both
-supported profile lanes and deepens server smoke command execution without
-changing the on-disk data model.
+Current checkpoint: HC Autopsy is preparing `1.2.1` from the published `1.2.0`
+base. This patch fixes the delayed in-game wipe summary broadcast crash path
+and moves HC Autopsy config/data into a launcher-agnostic Tempest Studios
+app-data folder with guarded first-launch migration from `config/hc-autopsy/`.
 
 ## Project Workflow
 
@@ -31,8 +31,11 @@ changing the on-disk data model.
 - Admin command gates use `ServerPermissionCompat`, allowing console,
   command-block, and operator-player sources with command permission level 2 /
   gamemaster or higher across the supported profiles.
+- In-game wipe summary broadcasts use `PlayerMessageCompat` so player message
+  delivery can fall back across supported runtime method shapes.
 - The dedicated-server smoke helper now verifies registration and executes
-  representative `/hcautopsy` command paths from a server command source.
+  representative `/hcautopsy` command paths from a server command source, then
+  exercises wipe-summary broadcast construction and server-thread dispatch.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -49,11 +52,18 @@ changing the on-disk data model.
 - Wipe detection injects into official-name `ServerPlayer#die`.
 - Stats are captured by reading raw vanilla stat JSON from
   `LevelResource.PLAYER_STATS_DIR`.
-- Runtime persistence is under `config/hc-autopsy/`.
+- Runtime persistence is under the fixed Tempest Studios app-data folder:
+  `%APPDATA%\TempestStudios\HC-Autopsy\` on Windows,
+  `~/Library/Application Support/TempestStudios/HC-Autopsy/` on macOS, and
+  `$XDG_DATA_HOME/tempest-studios/hc-autopsy/` or
+  `~/.local/share/tempest-studios/hc-autopsy/` on Linux.
+- First launch copies existing launcher-local `config/hc-autopsy/` data into
+  the app-data folder only when the app-data folder does not already contain HC
+  Autopsy data. Legacy files are left untouched as a backup.
 - Data files are run metadata, per-player run snapshots, run aggregates,
   lifetime player totals, and server lifetime totals.
 - Optional Discord notifications use a webhook URL stored in
-  `config/hc-autopsy/config.json`.
+  the app-data `config.json`.
 - `.env` is ignored for local publishing and metadata-update secrets.
 
 ## Current Command Root
@@ -215,6 +225,23 @@ Known command limitations:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`.
 - Removed merged branch refs for the completed `1.1.0` hardening and `1.2.0`
   compatibility-shim work after verifying they had no commits outside `main`.
+- Added launcher-agnostic Tempest Studios app-data storage for HC Autopsy
+  config/data and guarded first-launch migration from the old
+  `config/hc-autopsy/` folder.
+- Added `PlayerMessageCompat` and fail-soft server-thread dispatch around the
+  delayed wipe summary broadcast so a message API mismatch cannot crash wipe
+  finalization.
+- Expanded dedicated-server smoke coverage to exercise wipe-summary broadcast
+  construction and dispatch.
+- Bumped `mod_version` to `1.2.1` and added
+  `gradle/release-notes/1.2.1.md` for the storage migration and broadcast crash
+  fix patch.
+- Verified the `1.2.1` patch locally with `git diff --check`,
+  `.\gradlew.bat build --no-daemon --console=plain`,
+  `.\gradlew.bat buildAllVersions --no-daemon --console=plain`, and selected
+  dedicated-server smoke launches for `1.20`, `1.21.11`, and `26.2-pre-3`.
+  The smoke runs passed with isolated `hcautopsy.dataDir` app-data folders
+  under `build/smoke-run/`.
 
 ## Current Compatibility Conclusion
 

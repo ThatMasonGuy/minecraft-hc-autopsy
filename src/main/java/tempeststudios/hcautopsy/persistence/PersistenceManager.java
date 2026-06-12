@@ -3,11 +3,11 @@ package tempeststudios.hcautopsy.persistence;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.fabricmc.loader.api.FabricLoader;
 import tempeststudios.hcautopsy.HCAutopsy;
 import tempeststudios.hcautopsy.data.Run;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.RunState;
+import tempeststudios.hcautopsy.storage.HCAutopsyData;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.*;
  * Manages all file I/O for HC Autopsy.
  *
  * Directory structure:
- * /config/hc-autopsy/
+ * <Tempest Studios app-data>/HC-Autopsy/
  * ├── runs/
  * │   ├── <world-name>__<timestamp>/
  * │   │   ├── metadata.json
@@ -54,7 +54,7 @@ public class PersistenceManager {
     private final Map<UUID, String> playerNameCache;
 
     public PersistenceManager() {
-        this.baseDir = FabricLoader.getInstance().getConfigDir().resolve("hc-autopsy");
+        this.baseDir = HCAutopsyData.dataDir();
         this.runsDir = baseDir.resolve("runs");
         this.lifetimeDir = baseDir.resolve("lifetime");
         this.lifetimePlayersDir = lifetimeDir.resolve("players");

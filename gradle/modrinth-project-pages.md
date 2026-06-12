@@ -19,9 +19,10 @@ durable run history, lifetime totals, and in-game postmortem tools.
 
 Minecraft normally treats a Hardcore death as the end of the story. Servers get
 reset, stat files move around, chat scrolls away, and the details of the run can
-disappear. HC Autopsy keeps a separate server-side record in your config folder,
-so each wipe leaves behind the death context, vanilla stat snapshots, run
-totals, cached player names, and lifetime player and server history.
+disappear. HC Autopsy keeps a separate server-side record in a fixed Tempest
+Studios app-data folder, so each wipe leaves behind the death context, vanilla
+stat snapshots, run totals, cached player names, and lifetime player and server
+history.
 
 It works server-side on dedicated Fabric servers. Players do not need to install
 the mod. When the first player dies in a run, HC Autopsy records the wipe,
@@ -44,6 +45,8 @@ webhook summary.
 - Operator/console-safe tools for continuing a wiped run, recalculating
   lifetime totals, reloading config, and testing Discord webhooks
 - Optional Discord webhook notifications for wipe summaries
+- Launcher-agnostic app-data storage with first-launch migration from the old
+  `config/hc-autopsy/` folder
 - Defensive config/data loading and atomic writes for persisted HC Autopsy data
 - Server-only install; no client mod required
 
@@ -70,4 +73,16 @@ Choose the compatibility-group jar that matches your server:
 
 - `1.20-1.21.11`
 - `26.1-26.2-pre-3`
+
+HC Autopsy stores config and run history outside launcher-local `.minecraft`
+folders:
+
+- Windows: `%APPDATA%\TempestStudios\HC-Autopsy\`
+- macOS: `~/Library/Application Support/TempestStudios/HC-Autopsy/`
+- Linux: `$XDG_DATA_HOME/tempest-studios/hc-autopsy/` or
+  `~/.local/share/tempest-studios/hc-autopsy/`
+
+On first launch, existing `config/hc-autopsy/` data is copied to the new
+app-data folder when the new folder is empty. Old files stay in place as a
+backup.
 ```

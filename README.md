@@ -46,7 +46,8 @@ The default local development profile remains `1.21.11`.
 2. Install the matching Fabric API in the server `mods` folder.
 3. Place the HC Autopsy jar in the server `mods` folder.
 4. Launch the server once to generate the config file.
-5. Optionally configure a Discord webhook in `config/hc-autopsy/config.json`.
+5. Optionally configure a Discord webhook in the HC Autopsy app-data
+   `config.json`.
 
 ## How Tracking Works
 
@@ -154,7 +155,7 @@ access.
 /hcautopsy config reload
 ```
 
-Reloads `config/hc-autopsy/config.json` without restarting the server. Requires
+Reloads the app-data `config.json` without restarting the server. Requires
 admin command access.
 
 ```text
@@ -166,11 +167,17 @@ are configured. Requires admin command access.
 
 ## Data Files
 
-Data is stored under:
+Data is stored under a fixed Tempest Studios app-data folder:
 
 ```text
-config/hc-autopsy/
+Windows: %APPDATA%\TempestStudios\HC-Autopsy\
+macOS:   ~/Library/Application Support/TempestStudios/HC-Autopsy/
+Linux:   $XDG_DATA_HOME/tempest-studios/hc-autopsy/ or ~/.local/share/tempest-studios/hc-autopsy/
 ```
+
+On first launch, existing launcher-local data from `config/hc-autopsy/` is
+copied into the app-data folder when the app-data folder does not already
+contain HC Autopsy data. Old files are left untouched as a backup.
 
 Files and directories:
 

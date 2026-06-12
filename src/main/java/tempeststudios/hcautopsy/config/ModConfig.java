@@ -2,8 +2,8 @@ package tempeststudios.hcautopsy.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
 import tempeststudios.hcautopsy.HCAutopsy;
+import tempeststudios.hcautopsy.storage.HCAutopsyData;
 
 import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -35,7 +35,7 @@ public class ModConfig {
      * Load configuration from disk, creating default if missing.
      */
     public static ModConfig load() {
-        Path configDir = FabricLoader.getInstance().getConfigDir().resolve("hc-autopsy");
+        Path configDir = HCAutopsyData.dataDir();
         Path configPath = configDir.resolve("config.json");
 
         ModConfig config;

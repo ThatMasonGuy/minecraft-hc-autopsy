@@ -58,6 +58,7 @@ tasks.withType(JavaExec).configureEach {
 
 	if (smokeTestEnabled) {
 		jvmArgs('-Dhcautopsy.smokeTest=true')
+		jvmArgs("-Dhcautopsy.dataDir=${new File(smokeWorkingDir, 'hc-autopsy-data').absolutePath}")
 		jvmArgs("-Dhcautopsy.smokeMinecraftProfile=${rootProject.minecraft_version_profile}")
 		jvmArgs("-Dhcautopsy.smokeGameVersion=${rootProject.minecraft_version}")
 

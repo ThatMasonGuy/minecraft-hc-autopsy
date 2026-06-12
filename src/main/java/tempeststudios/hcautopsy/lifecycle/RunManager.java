@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 import tempeststudios.hcautopsy.HCAutopsy;
+import tempeststudios.hcautopsy.compat.PlayerMessageCompat;
 import tempeststudios.hcautopsy.config.ModConfig;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.RunState;
@@ -14,6 +15,7 @@ import tempeststudios.hcautopsy.persistence.PersistenceManager;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
 import tempeststudios.hcautopsy.stats.StatSnapshotService;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -275,15 +277,49 @@ public class RunManager {
                 : Component.literal("Top playtime: " + topPlayer + " ("
                 + formatDuration((topPlayTime / 20) * 1000) + ")").withStyle(ChatFormatting.YELLOW);
 
-        server.execute(() -> {
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                player.sendSystemMessage(header);
-                player.sendSystemMessage(death);
-                player.sendSystemMessage(duration);
-                player.sendSystemMessage(totals);
-                player.sendSystemMessage(leader);
-            }
-        });
+        List<Component> lines = List.of(header, death, duration, totals, leader);
+
+        try {
+            server.execute(() -> {
+                try {
+                    int failedMessages = 0;
+                    for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                        for (Component line : lines) {
+                            if (!PlayerMessageCompat.sendSystemMessage(player, line)) {
+                                failedMessages++;
+                            }
+                        }
+                    }
+                    if (failedMessages > 0) {
+                        HCAutopsy.LOGGER.warn(
+                                "Failed to send {} HC Autopsy wipe summary message(s).",
+                                failedMessages
+                        );
+                    }
+                } catch (Throwable throwable) {
+                    HCAutopsy.LOGGER.warn("Failed to broadcast HC Autopsy wipe summary", throwable);
+                }
+            });
+        } catch (RuntimeException e) {
+            HCAutopsy.LOGGER.warn(
+                    "Skipping HC Autopsy wipe summary broadcast because the server is no longer accepting tasks.",
+                    e
+            );
+        }
+    }
+
+    public void broadcastSmokeTestWipeSummary() {
+        RunMetadata smokeRun = new RunMetadata("smoke__wipe-summary", statService.getWorldName());
+        smokeRun.markWiped(WipeCause.create(
+                UUID.nameUUIDFromBytes("hc-autopsy-smoke-player".getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                "SmokeTester",
+                "SmokeTester hit the ground too hard",
+                "fall",
+                null,
+                null
+        ));
+
+        broadcastWipeSummary(smokeRun, Map.of(), "{}");
     }
 
     /**

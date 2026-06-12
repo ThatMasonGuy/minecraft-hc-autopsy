@@ -142,7 +142,9 @@ normalization:
 - `MinecraftServer#getWorldPath(LevelResource.PLAYER_STATS_DIR)`
 - `MinecraftServer#getWorldData().getLevelName()`
 - `ServerPlayer#getStats().save()`
-- Fabric Loader config directory lookup
+- `PlayerMessageCompat` for in-game wipe summary player message delivery
+- Tempest Studios app-data storage with guarded migration from the old Fabric
+  Loader config directory
 - Mixin compatibility levels
 - Fabric metadata dependency ranges
 
@@ -201,6 +203,8 @@ Implemented shim:
 - `ServerPermissionCompat` for legacy integer permission checks and modern
   permission-set checks. Admin commands map to command permission level 2 /
   gamemaster, using `COMMANDS_GAMEMASTER` or the equivalent runtime field.
+- `PlayerMessageCompat` for delayed wipe summary broadcasts to online players,
+  including named and intermediary method fallbacks and fail-soft delivery.
 
 ### Stat Snapshot Paths
 
@@ -406,6 +410,20 @@ Release `1.2.0` evidence from 2026-06-07:
   published `1.2.0+mc26.1-26.2-pre-3` as Modrinth version `WO6HnQEM`.
 - The exact publish commit is tagged `v1.2.0` and has a GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`.
+
+Local `1.2.1` patch evidence from 2026-06-13:
+
+- `.\gradlew.bat build --no-daemon --console=plain` passed for the default
+  profile and ran the focused JUnit tests for app-data path resolution,
+  tracked-data detection, and player message compatibility.
+- `.\gradlew.bat buildAllVersions --no-daemon --console=plain` passed and
+  verified `hc-autopsy-1.2.1.jar` release metadata for both supported profile
+  jars.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11,26.1-26.2-pre-3" "-Phcautopsy_smoke_game_versions=1.20,1.21.11,26.2-pre-3" --no-daemon --console=plain`
+  passed for the oldest supported runtime, the newest pre-26 runtime, and
+  `26.2-pre-3`. The smoke launches used isolated `hcautopsy.dataDir` app-data
+  folders and exercised wipe-summary broadcast construction and server-thread
+  dispatch.
 
 ## Immediate Implementation Notes
 
