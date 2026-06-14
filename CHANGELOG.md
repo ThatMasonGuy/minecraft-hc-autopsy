@@ -5,6 +5,13 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+### Changed
+
+- Recorded the completed `1.3.0` Modrinth publish, GitHub validation, live
+  project-page sync, and GitHub Release details.
+
+## 1.3.0 - 2026-06-14
+
 ### Added
 
 - Added automatic post-wipe stat leaderboards after the wipe summary in game

@@ -1,11 +1,10 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.3.0` is in development after the published
-`1.2.1` Modrinth/GitHub patch. The current implementation adds automatic
-post-wipe stat leaderboards after the existing wipe summary in game chat and
-Discord, plus cleaner Discord leaderboard embeds and player-facing world names,
-while preserving the launcher-agnostic Tempest Studios app-data storage from
-`1.2.1`.
+Current checkpoint: HC Autopsy `1.3.0` is published on Modrinth and GitHub.
+The release adds automatic post-wipe stat leaderboards after the existing wipe
+summary in game chat and Discord, plus cleaner Discord leaderboard embeds and
+player-facing world names, while preserving the launcher-agnostic Tempest
+Studios app-data storage from `1.2.1`.
 
 ## Project Workflow
 
@@ -296,6 +295,27 @@ Known command limitations:
   from a representative stat snapshot.
 - Bumped `mod_version` to `1.3.0` and added
   `gradle/release-notes/1.3.0.md` for the leaderboard feature.
+- Verified the `1.3.0` release locally with `git diff --check`,
+  `.\gradlew.bat test --no-daemon --console=plain`,
+  `.\gradlew.bat buildAllVersions --no-daemon --console=plain`, selected
+  `1.21.11` dedicated-server smoke, and the full
+  `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain` gate.
+- Updated the live Modrinth project page from
+  `gradle/modrinth-project-pages.md` and verified the leaderboard copy read
+  back from the API. Before/after snapshots were saved under ignored
+  `build/modrinth/` artifacts.
+- Pushed `main` to `5aeb5e71338ef024e35c8b825a0e538d83594c64` and passed
+  GitHub build workflow run `27496967898`.
+- Published HC Autopsy `1.3.0` to Modrinth through GitHub Actions workflow run
+  `27497063024`. The run repeated the full supported dedicated-server smoke
+  matrix with 23 `HCAUTOPSY_SERVER_SMOKE_TEST_PASS` markers and
+  `commandsExecuted=true`.
+- Published Modrinth version `EY25dRsh` for
+  `1.3.0+mc1.20-1.21.11`.
+- Published Modrinth version `ouw0TJqM` for
+  `1.3.0+mc26.1-26.2-pre-3`.
+- Tagged the exact publish commit as `v1.3.0` and created the GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.3.0`.
 
 ## Current Compatibility Conclusion
 
@@ -495,3 +515,21 @@ Current release record:
 - GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.0`
 - Modrinth versions: `aTPKOz6I` and `WO6HnQEM`.
+- `v1.2.1`: published from commit
+  `f2d78fa95d2b7eff5fe2192b9aa542c86eb0327c`.
+- GitHub Actions build run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27429173534`
+- GitHub Actions publish run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27429181718`
+- GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.1`
+- Modrinth versions: `OubGKHg0` and `HPDTTcI3`.
+- `v1.3.0`: published from commit
+  `5aeb5e71338ef024e35c8b825a0e538d83594c64`.
+- GitHub Actions build run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27496967898`
+- GitHub Actions publish run:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/actions/runs/27497063024`
+- GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.3.0`
+- Modrinth versions: `EY25dRsh` and `ouw0TJqM`.

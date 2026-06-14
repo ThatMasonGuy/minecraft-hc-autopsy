@@ -14,6 +14,10 @@ Modrinth project id: `4eBkeUAl`.
 
 Fabric API dependency project id: `P7dR8mSH`.
 
+Release `1.3.0` was published from commit
+`5aeb5e71338ef024e35c8b825a0e538d83594c64` by GitHub Actions run
+`27497063024`.
+
 Release `1.2.1` was published from commit
 `f2d78fa95d2b7eff5fe2192b9aa542c86eb0327c` by GitHub Actions run
 `27429181718`.
@@ -32,6 +36,8 @@ Release `1.0.0` was published from commit
 
 Published Modrinth versions:
 
+- `1.3.0+mc1.20-1.21.11`: `EY25dRsh`
+- `1.3.0+mc26.1-26.2-pre-3`: `ouw0TJqM`
 - `1.2.1+mc1.20-1.21.11`: `OubGKHg0`
 - `1.2.1+mc26.1-26.2-pre-3`: `HPDTTcI3`
 - `1.2.0+mc1.20-1.21.11`: `aTPKOz6I`
@@ -136,6 +142,11 @@ Both entries used `gradle/release-notes/1.1.0.md`.
 
 The live Modrinth project summary and description body were updated from
 `gradle/modrinth-project-pages.md` during `1.1.0` release prep on 2026-06-07.
+Before/after readback snapshots were saved under ignored `build/modrinth/`
+artifacts.
+
+The live Modrinth project summary and description body were updated from
+`gradle/modrinth-project-pages.md` during `1.3.0` release prep on 2026-06-14.
 Before/after readback snapshots were saved under ignored `build/modrinth/`
 artifacts.
 

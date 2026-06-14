@@ -69,10 +69,10 @@ gradle/smoke-tests.json
 Current supported smoke status:
 
 - `1.20-1.21.11`: all exact runtime rows `pass`; last refreshed by GitHub
-  Actions Modrinth publish run `27429181718` on 2026-06-12 with
+  Actions Modrinth publish run `27497063024` on 2026-06-14 with
   `commandsExecuted=true`.
 - `26.1-26.2-pre-3`: all exact runtime rows `pass`; last refreshed by GitHub
-  Actions Modrinth publish run `27429181718` on 2026-06-12 with
+  Actions Modrinth publish run `27497063024` on 2026-06-14 with
   `commandsExecuted=true`.
 
 Current candidate smoke status:

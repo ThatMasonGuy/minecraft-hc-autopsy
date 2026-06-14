@@ -440,6 +440,31 @@ Local and publish `1.2.1` patch evidence from 2026-06-13:
 - The exact publish commit is tagged `v1.2.1` and has a GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.1`.
 
+Local and publish `1.3.0` leaderboard evidence from 2026-06-14:
+
+- `git diff --check` passed for the feature and smoke-hardening changes.
+- `.\gradlew.bat test --no-daemon --console=plain` passed, including focused
+  display-name coverage for `worlds/` trimming.
+- `.\gradlew.bat buildAllVersions --no-daemon --console=plain` passed and
+  verified `hc-autopsy-1.3.0.jar` release metadata for both supported profile
+  jars.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=1.20-1.21.11" "-Phcautopsy_smoke_game_versions=1.21.11" --no-daemon --console=plain`
+  passed with the smoke helper executing `/hcautopsy leaderboard postwipe`
+  against a seeded wiped run and saved player snapshots.
+- `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain` passed the
+  full local publish-validation path, including all 23 supported
+  dedicated-server smoke rows and the two-entry upload plan for `1.3.0`.
+- GitHub Actions build run `27496967898` passed from `main` at commit
+  `5aeb5e71338ef024e35c8b825a0e538d83594c64`.
+- GitHub Actions publish run `27497063024` repeated the supported smoke matrix,
+  published `1.3.0+mc1.20-1.21.11` as Modrinth version `EY25dRsh`, and
+  published `1.3.0+mc26.1-26.2-pre-3` as Modrinth version `ouw0TJqM`.
+- The live Modrinth project page was updated from
+  `gradle/modrinth-project-pages.md` and API readback matched the committed
+  leaderboard copy.
+- The exact publish commit is tagged `v1.3.0` and has a GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.3.0`.
+
 ## Immediate Implementation Notes
 
 - Preserve the server-only metadata and official/Mojang source naming while
