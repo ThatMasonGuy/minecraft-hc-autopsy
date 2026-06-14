@@ -46,7 +46,8 @@ mined.
 - `/hcautopsy` commands for status, run history, cached players, player totals,
   server totals, and lifetime leaderboards
 - Operator/console-safe tools for continuing a wiped run, recalculating
-  lifetime totals, reloading config, and testing Discord webhooks
+  lifetime totals, reloading config, broadcasting full post-wipe leaderboards,
+  and testing Discord webhooks
 - Optional Discord webhook notifications for wipe summaries and post-wipe
   leaderboards
 - Automatic post-wipe awards for playtime, blocks broken, damage taken, damage
@@ -64,6 +65,7 @@ mined.
 - Post-wipe stat review
 - Comparing lifetime playtime, deaths, distance walked, and jumps
 - Calling out the run's biggest post-wipe stat winners
+- Rebroadcasting full post-wipe rankings to game chat and Discord
 - Long-term server history
 - Discord communities that want automatic wipe summaries
 - Players who want the receipts after a run goes wrong

@@ -21,26 +21,31 @@ public class WipeLeaderboardBuilder {
     private static final List<AwardStat> AWARD_STATS = List.of(
             new AwardStat(
                     "Most Time Played",
+                    "Time Played",
                     (engine, snapshot) -> engine.extractStat(snapshot, "stats.minecraft:custom.minecraft:play_time"),
                     ValueFormat.TICKS
             ),
             new AwardStat(
                     "Most Blocks Broken",
+                    "Blocks Broken",
                     (engine, snapshot) -> engine.extractStatCategory(snapshot, "stats.minecraft:mined"),
                     ValueFormat.NUMBER
             ),
             new AwardStat(
                     "Most Damage Taken",
+                    "Damage Taken",
                     (engine, snapshot) -> engine.extractStat(snapshot, "stats.minecraft:custom.minecraft:damage_taken"),
                     ValueFormat.DAMAGE_TENTHS
             ),
             new AwardStat(
                     "Most Damage Dealt",
+                    "Damage Dealt",
                     (engine, snapshot) -> engine.extractStat(snapshot, "stats.minecraft:custom.minecraft:damage_dealt"),
                     ValueFormat.DAMAGE_TENTHS
             ),
             new AwardStat(
                     "Most Diamonds Mined",
+                    "Diamonds Mined",
                     (engine, snapshot) -> engine.extractStatSum(snapshot, DIAMOND_ORE_PATHS),
                     ValueFormat.NUMBER
             )
@@ -66,9 +71,10 @@ public class WipeLeaderboardBuilder {
 
         List<WipeLeaderboardReport.Entry> entries = new ArrayList<>();
         for (AwardStat stat : AWARD_STATS) {
-            findWinner(stat, snapshots, playerNameResolver)
+            rankedCandidates(stat, snapshots, playerNameResolver, false).stream()
+                    .findFirst()
                     .map(winner -> new WipeLeaderboardReport.Entry(
-                            stat.label(),
+                            stat.awardLabel(),
                             winner.playerName(),
                             winner.value(),
                             stat.format(winner.value())
@@ -79,27 +85,66 @@ public class WipeLeaderboardBuilder {
         return new WipeLeaderboardReport(entries);
     }
 
-    private Optional<Winner> findWinner(
-            AwardStat stat,
+    public WipeLeaderboardRankingsReport buildRankings(
             Map<UUID, String> snapshots,
             Function<UUID, String> playerNameResolver
     ) {
+        if (snapshots == null || snapshots.isEmpty()) {
+            return new WipeLeaderboardRankingsReport(List.of());
+        }
+
+        List<WipeLeaderboardRankingsReport.Category> categories = new ArrayList<>();
+        for (AwardStat stat : AWARD_STATS) {
+            List<Winner> winners = rankedCandidates(stat, snapshots, playerNameResolver, true);
+            if (winners.isEmpty()) {
+                continue;
+            }
+
+            List<WipeLeaderboardRankingsReport.RankedEntry> entries = new ArrayList<>();
+            int rank = 1;
+            for (Winner winner : winners) {
+                entries.add(new WipeLeaderboardRankingsReport.RankedEntry(
+                        rank,
+                        winner.playerName(),
+                        winner.value(),
+                        stat.format(winner.value())
+                ));
+                rank++;
+            }
+            categories.add(new WipeLeaderboardRankingsReport.Category(stat.categoryLabel(), entries));
+        }
+
+        return new WipeLeaderboardRankingsReport(categories);
+    }
+
+    private List<Winner> rankedCandidates(
+            AwardStat stat,
+            Map<UUID, String> snapshots,
+            Function<UUID, String> playerNameResolver,
+            boolean includeMissingAsZero
+    ) {
         return snapshots.entrySet().stream()
-                .map(entry -> toCandidate(stat, entry, playerNameResolver))
+                .map(entry -> toCandidate(stat, entry, playerNameResolver, includeMissingAsZero))
                 .flatMap(Optional::stream)
-                .max(Comparator
+                .sorted(Comparator
                         .comparingLong(Winner::value)
-                        .thenComparing(winner -> winner.playerName().toLowerCase(Locale.ROOT), Comparator.reverseOrder()));
+                        .reversed()
+                        .thenComparing(winner -> winner.playerName().toLowerCase(Locale.ROOT)))
+                .toList();
     }
 
     private Optional<Winner> toCandidate(
             AwardStat stat,
             Map.Entry<UUID, String> entry,
-            Function<UUID, String> playerNameResolver
+            Function<UUID, String> playerNameResolver,
+            boolean includeMissingAsZero
     ) {
         Long value = stat.extract(aggregationEngine, entry.getValue());
         if (value == null) {
-            return Optional.empty();
+            if (!includeMissingAsZero) {
+                return Optional.empty();
+            }
+            value = 0L;
         }
         return Optional.of(new Winner(displayName(entry.getKey(), playerNameResolver), value));
     }
@@ -114,7 +159,7 @@ public class WipeLeaderboardBuilder {
         return playerUuid.toString();
     }
 
-    private record AwardStat(String label, StatExtractor extractor, ValueFormat format) {
+    private record AwardStat(String awardLabel, String categoryLabel, StatExtractor extractor, ValueFormat format) {
         private Long extract(AggregationEngine engine, String snapshot) {
             return extractor.extract(engine, snapshot);
         }

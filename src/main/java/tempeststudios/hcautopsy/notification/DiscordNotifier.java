@@ -9,6 +9,7 @@ import tempeststudios.hcautopsy.config.ModConfig;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.WipeCause;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
+import tempeststudios.hcautopsy.stats.WipeLeaderboardRankingsReport;
 import tempeststudios.hcautopsy.stats.WipeLeaderboardReport;
 
 import java.net.URI;
@@ -19,6 +20,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -114,6 +117,28 @@ public class DiscordNotifier {
         });
     }
 
+    public CompletableFuture<Void> sendWipeLeaderboard(
+            RunMetadata run,
+            WipeLeaderboardRankingsReport rankings
+    ) {
+        if (!isConfigured() || rankings == null || rankings.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        return CompletableFuture.runAsync(() -> {
+            try {
+                for (WipeLeaderboardRankingsReport.Category category : rankings.categories()) {
+                    for (String description : chunkCategoryDescriptions(category)) {
+                        sendWebhook(buildRankingEmbed(run, category.label(), description));
+                    }
+                }
+                HCAutopsy.LOGGER.info("Discord leaderboard notification sent for run {}", run.getRunId());
+            } catch (Exception e) {
+                HCAutopsy.LOGGER.error("Failed to send Discord leaderboard notification: {}", e.getMessage());
+            }
+        });
+    }
+
     /**
      * Build the Discord embed for a wipe notification.
      */
@@ -175,6 +200,27 @@ public class DiscordNotifier {
         return embed;
     }
 
+    private JsonObject buildRankingEmbed(RunMetadata run, String categoryLabel, String description) {
+        JsonObject embed = new JsonObject();
+        embed.addProperty("title", "HC Autopsy " + categoryLabel + " Leaderboard");
+        embed.addProperty("description", description);
+        embed.addProperty("color", 0x3498DB);
+
+        JsonArray fields = new JsonArray();
+        fields.add(createField("World", run.getWorldName(), true));
+        fields.add(createField("Run Duration", formatDuration(run.getDurationMs()), true));
+        embed.add("fields", fields);
+
+        JsonObject footer = new JsonObject();
+        footer.addProperty("text", "Run ID: " + run.getRunId());
+        embed.add("footer", footer);
+
+        long timestamp = run.getEndedAt() > 0 ? run.getEndedAt() : Instant.now().toEpochMilli();
+        embed.addProperty("timestamp", Instant.ofEpochMilli(timestamp).toString());
+
+        return embed;
+    }
+
     private String buildLeaderboardDescription(WipeLeaderboardReport leaderboard) {
         StringBuilder description = new StringBuilder();
         for (WipeLeaderboardReport.Entry entry : leaderboard.entries()) {
@@ -187,6 +233,30 @@ public class DiscordNotifier {
                     .append("\n");
         }
         return description.toString().trim();
+    }
+
+    private List<String> chunkCategoryDescriptions(WipeLeaderboardRankingsReport.Category category) {
+        List<String> chunks = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+
+        for (WipeLeaderboardRankingsReport.RankedEntry entry : category.entries()) {
+            String line = "**#" + entry.rank() + "** "
+                    + entry.playerName()
+                    + " | "
+                    + entry.formattedValue()
+                    + "\n";
+            if (current.length() > 0 && current.length() + line.length() > 3800) {
+                chunks.add(current.toString().trim());
+                current = new StringBuilder();
+            }
+            current.append(line);
+        }
+
+        if (current.length() > 0) {
+            chunks.add(current.toString().trim());
+        }
+
+        return chunks.isEmpty() ? List.of("No entries.") : chunks;
     }
 
     /**

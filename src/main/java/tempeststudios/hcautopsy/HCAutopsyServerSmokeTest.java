@@ -79,6 +79,7 @@ public final class HCAutopsyServerSmokeTest {
         requireCommand(server, "hcautopsy", "player");
         requireCommand(server, "hcautopsy", "players");
         requireCommand(server, "hcautopsy", "leaderboard", "playtime");
+        requireCommand(server, "hcautopsy", "leaderboard", "postwipe");
         requireCommand(server, "hcautopsy", "server", "totals");
         requireCommand(server, "hcautopsy", "recalc");
         requireCommand(server, "hcautopsy", "config", "reload");
@@ -124,6 +125,7 @@ public final class HCAutopsyServerSmokeTest {
                 "hcautopsy player SmokeTester totals",
                 "hcautopsy players",
                 "hcautopsy leaderboard playtime",
+                "hcautopsy leaderboard postwipe",
                 "hcautopsy server totals",
                 "hcautopsy recalc",
                 "hcautopsy config reload",

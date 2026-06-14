@@ -71,6 +71,8 @@ from `1.2.1`.
   the app-data `config.json`.
 - Wipe finalization now builds a post-wipe leaderboard from the captured player
   snapshots and sends it after the wipe summary in both game chat and Discord.
+- `/hcautopsy leaderboard postwipe` broadcasts the latest wiped run's full
+  category rankings in game chat and queues Discord leaderboard embeds.
 - `.env` is ignored for local publishing and metadata-update secrets.
 
 ## Current Command Root
@@ -87,6 +89,7 @@ Implemented subcommands:
 - `/hcautopsy leaderboard deaths`
 - `/hcautopsy leaderboard walked`
 - `/hcautopsy leaderboard jumps`
+- `/hcautopsy leaderboard postwipe`
 - `/hcautopsy run last`
 - `/hcautopsy run list`
 - `/hcautopsy run <id>`
@@ -274,6 +277,8 @@ Known command limitations:
 - Added automatic post-wipe leaderboards for most time played, blocks broken,
   damage taken, damage dealt, and diamonds mined from regular plus deepslate
   diamond ore.
+- Added `/hcautopsy leaderboard postwipe` to broadcast every player's rank and
+  value for each post-wipe stat category from the latest wiped run.
 - Updated the wipe broadcast smoke hook to construct the post-wipe leaderboard
   from a representative stat snapshot.
 - Bumped `mod_version` to `1.3.0` and added

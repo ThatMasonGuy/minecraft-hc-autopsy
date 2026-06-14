@@ -32,7 +32,8 @@ Each automated dedicated-server smoke launch should:
 - verify `/hcautopsy` is registered
 - verify the expected `/hcautopsy` subcommands are registered
 - execute representative `/hcautopsy` command paths from a server command
-  source, including admin-gated commands
+  source, including admin-gated commands and the post-wipe leaderboard
+  broadcast command
 - exercise wipe-summary and post-wipe leaderboard broadcast construction and
   server-thread dispatch
 - verify config and persistence initialization

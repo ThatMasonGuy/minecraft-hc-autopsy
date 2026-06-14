@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import tempeststudios.hcautopsy.HCAutopsy;
+import tempeststudios.hcautopsy.compat.PlayerMessageCompat;
 import tempeststudios.hcautopsy.compat.ServerPermissionCompat;
 import tempeststudios.hcautopsy.compat.TextEventCompat;
 import tempeststudios.hcautopsy.data.RunMetadata;
@@ -22,6 +23,8 @@ import tempeststudios.hcautopsy.lifecycle.RunManager;
 import tempeststudios.hcautopsy.notification.DiscordNotifier;
 import tempeststudios.hcautopsy.persistence.PersistenceManager;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
+import tempeststudios.hcautopsy.stats.WipeLeaderboardBuilder;
+import tempeststudios.hcautopsy.stats.WipeLeaderboardRankingsReport;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -30,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -45,10 +49,12 @@ public class CommandRegistry {
 
     private final PersistenceManager persistence;
     private final AggregationEngine aggregationEngine;
+    private final WipeLeaderboardBuilder wipeLeaderboardBuilder;
 
     public CommandRegistry(PersistenceManager persistence) {
         this.persistence = persistence;
         this.aggregationEngine = new AggregationEngine();
+        this.wipeLeaderboardBuilder = new WipeLeaderboardBuilder();
     }
 
     public void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess,
@@ -69,7 +75,10 @@ public class CommandRegistry {
                                 .then(Commands.literal("walked")
                                         .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.WALKED)))
                                 .then(Commands.literal("jumps")
-                                        .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.JUMPS))))
+                                        .executes(ctx -> leaderboardCommand(ctx, LeaderboardStat.JUMPS)))
+                                .then(Commands.literal("postwipe")
+                                        .requires(CommandRegistry::requiresAdminCommandSource)
+                                        .executes(this::postWipeLeaderboardCommand)))
                         .then(Commands.literal("run")
                                 .then(Commands.literal("last")
                                         .executes(this::runLastCommand))
@@ -338,6 +347,95 @@ public class CommandRegistry {
 
         ctx.getSource().sendSystemMessage(message);
         return 1;
+    }
+
+    private int postWipeLeaderboardCommand(CommandContext<CommandSourceStack> ctx) {
+        RunMetadata lastWiped = persistence.getLastWipedRun();
+        if (lastWiped == null) {
+            ctx.getSource().sendSystemMessage(Component.literal("No wiped runs found.")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 1;
+        }
+
+        Map<UUID, String> snapshots = persistence.loadAllPlayerSnapshots(lastWiped.getRunId());
+        if (snapshots.isEmpty()) {
+            ctx.getSource().sendSystemMessage(Component.literal("No player snapshots found for run " + lastWiped.getRunId() + ".")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 1;
+        }
+
+        WipeLeaderboardRankingsReport rankings = wipeLeaderboardBuilder.buildRankings(
+                snapshots,
+                uuid -> playerDisplayName(uuid, null)
+        );
+        if (rankings.isEmpty()) {
+            ctx.getSource().sendSystemMessage(Component.literal("No leaderboard stats found for run " + lastWiped.getRunId() + ".")
+                    .withStyle(ChatFormatting.YELLOW));
+            return 1;
+        }
+
+        int playerMessagesFailed = broadcastPostWipeLeaderboard(ctx.getSource(), lastWiped, rankings);
+        DiscordNotifier notifier = HCAutopsy.getDiscordNotifier();
+        boolean discordQueued = false;
+        if (notifier != null && notifier.isConfigured()) {
+            notifier.sendWipeLeaderboard(lastWiped, rankings);
+            discordQueued = true;
+        }
+
+        MutableComponent confirmation = Component.literal("Post-wipe leaderboard broadcast for run ")
+                .withStyle(ChatFormatting.GREEN)
+                .append(Component.literal(lastWiped.getRunId()).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(".").withStyle(ChatFormatting.GREEN));
+        ctx.getSource().sendSystemMessage(confirmation);
+
+        if (!discordQueued) {
+            ctx.getSource().sendSystemMessage(Component.literal("Discord notifications are disabled or missing a webhook URL.")
+                    .withStyle(ChatFormatting.YELLOW));
+        }
+        if (playerMessagesFailed > 0) {
+            ctx.getSource().sendSystemMessage(Component.literal("Failed to send " + playerMessagesFailed + " in-game leaderboard message(s).")
+                    .withStyle(ChatFormatting.YELLOW));
+        }
+        return 1;
+    }
+
+    private int broadcastPostWipeLeaderboard(
+            CommandSourceStack source,
+            RunMetadata run,
+            WipeLeaderboardRankingsReport rankings
+    ) {
+        List<Component> lines = buildPostWipeLeaderboardLines(run, rankings);
+        int failedMessages = 0;
+        for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
+            for (Component line : lines) {
+                if (!PlayerMessageCompat.sendSystemMessage(player, line)) {
+                    failedMessages++;
+                }
+            }
+        }
+        return failedMessages;
+    }
+
+    private List<Component> buildPostWipeLeaderboardLines(RunMetadata run, WipeLeaderboardRankingsReport rankings) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.literal("[HC Autopsy] Full post-wipe leaderboard")
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        lines.add(Component.literal("Run: ").withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(run.getWorldName()).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(" | Players: ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(String.valueOf(rankings.playerCount())).withStyle(ChatFormatting.AQUA)));
+
+        for (WipeLeaderboardRankingsReport.Category category : rankings.categories()) {
+            lines.add(Component.literal(category.label()).withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD));
+            for (WipeLeaderboardRankingsReport.RankedEntry entry : category.entries()) {
+                MutableComponent line = Component.literal(entry.rank() + ". ").withStyle(ChatFormatting.GRAY)
+                        .append(Component.literal(entry.playerName()).withStyle(ChatFormatting.WHITE))
+                        .append(Component.literal(" | ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.literal(entry.formattedValue()).withStyle(ChatFormatting.AQUA));
+                lines.add(line);
+            }
+        }
+        return lines;
     }
 
     private int recalculateCommand(CommandContext<CommandSourceStack> ctx) {

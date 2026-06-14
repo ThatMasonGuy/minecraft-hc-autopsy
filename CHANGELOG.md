@@ -10,6 +10,8 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Added automatic post-wipe stat leaderboards after the wipe summary in game
   chat and Discord, covering most time played, blocks broken, damage taken,
   damage dealt, and diamonds mined.
+- Added `/hcautopsy leaderboard postwipe` to broadcast full latest-wipe
+  category rankings in game chat and Discord.
 - Added reusable wipe leaderboard report building on top of the existing stat
   aggregation helpers, including category totals and summed diamond ore paths.
 

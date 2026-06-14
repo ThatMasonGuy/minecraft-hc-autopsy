@@ -142,6 +142,14 @@ name cache.
 Shows lifetime leaderboards from wiped-run aggregates.
 
 ```text
+/hcautopsy leaderboard postwipe
+```
+
+Broadcasts the latest wiped run's full post-wipe leaderboards in game chat and
+queues Discord leaderboard embeds when Discord is configured. Requires admin
+command access.
+
+```text
 /hcautopsy server totals
 ```
 
