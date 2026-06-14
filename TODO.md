@@ -3,8 +3,9 @@
 Current checkpoint: HC Autopsy `1.3.0` is in development after the published
 `1.2.1` Modrinth/GitHub patch. The current implementation adds automatic
 post-wipe stat leaderboards after the existing wipe summary in game chat and
-Discord while preserving the launcher-agnostic Tempest Studios app-data storage
-from `1.2.1`.
+Discord, plus cleaner Discord leaderboard embeds and player-facing world names,
+while preserving the launcher-agnostic Tempest Studios app-data storage from
+`1.2.1`.
 
 ## Project Workflow
 
@@ -73,6 +74,11 @@ from `1.2.1`.
   snapshots and sends it after the wipe summary in both game chat and Discord.
 - `/hcautopsy leaderboard postwipe` broadcasts the latest wiped run's full
   category rankings in game chat and queues Discord leaderboard embeds.
+- Discord post-wipe leaderboards use category-specific colors, podium fields,
+  and compact rank chunks instead of one dense description block.
+- Player-facing run output trims leading `worlds/` and displayed run ids trim
+  the matching `worlds_` prefix; persisted metadata and run folder names remain
+  unchanged.
 - `.env` is ignored for local publishing and metadata-update secrets.
 
 ## Current Command Root
@@ -279,6 +285,8 @@ Known command limitations:
   diamond ore.
 - Added `/hcautopsy leaderboard postwipe` to broadcast every player's rank and
   value for each post-wipe stat category from the latest wiped run.
+- Polished post-wipe Discord leaderboard embeds and hid the noisy leading
+  `worlds/` prefix from player-facing run names.
 - Updated the wipe broadcast smoke hook to construct the post-wipe leaderboard
   from a representative stat snapshot.
 - Bumped `mod_version` to `1.3.0` and added

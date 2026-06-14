@@ -22,6 +22,7 @@ import tempeststudios.hcautopsy.data.WipeCause;
 import tempeststudios.hcautopsy.lifecycle.RunManager;
 import tempeststudios.hcautopsy.notification.DiscordNotifier;
 import tempeststudios.hcautopsy.persistence.PersistenceManager;
+import tempeststudios.hcautopsy.presentation.RunDisplayNames;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
 import tempeststudios.hcautopsy.stats.WipeLeaderboardBuilder;
 import tempeststudios.hcautopsy.stats.WipeLeaderboardRankingsReport;
@@ -130,11 +131,11 @@ public class CommandRegistry {
         MutableComponent message = Component.literal("=== HC Autopsy Status ===\n").withStyle(ChatFormatting.GOLD);
 
         message.append(Component.literal("Run: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(activeRun.getRunId()).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(RunDisplayNames.runId(activeRun.getRunId())).withStyle(ChatFormatting.WHITE))
                 .append(Component.literal("\n"));
 
         message.append(Component.literal("World: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(activeRun.getWorldName()).withStyle(ChatFormatting.GREEN))
+                .append(Component.literal(RunDisplayNames.world(activeRun.getWorldName())).withStyle(ChatFormatting.GREEN))
                 .append(Component.literal("\n"));
 
         message.append(Component.literal("State: ").withStyle(ChatFormatting.GRAY))
@@ -200,7 +201,7 @@ public class CommandRegistry {
             }
 
             MutableComponent runEntry = Component.literal("- ")
-                    .append(Component.literal(meta.getWorldName()).withStyle(ChatFormatting.WHITE))
+                    .append(Component.literal(RunDisplayNames.world(meta.getWorldName())).withStyle(ChatFormatting.WHITE))
                     .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
                     .append(formatState(meta.getState()))
                     .append(Component.literal(" - ").withStyle(ChatFormatting.GRAY))
@@ -359,7 +360,8 @@ public class CommandRegistry {
 
         Map<UUID, String> snapshots = persistence.loadAllPlayerSnapshots(lastWiped.getRunId());
         if (snapshots.isEmpty()) {
-            ctx.getSource().sendSystemMessage(Component.literal("No player snapshots found for run " + lastWiped.getRunId() + ".")
+            ctx.getSource().sendSystemMessage(Component.literal("No player snapshots found for run "
+                            + RunDisplayNames.runId(lastWiped.getRunId()) + ".")
                     .withStyle(ChatFormatting.YELLOW));
             return 1;
         }
@@ -369,7 +371,8 @@ public class CommandRegistry {
                 uuid -> playerDisplayName(uuid, null)
         );
         if (rankings.isEmpty()) {
-            ctx.getSource().sendSystemMessage(Component.literal("No leaderboard stats found for run " + lastWiped.getRunId() + ".")
+            ctx.getSource().sendSystemMessage(Component.literal("No leaderboard stats found for run "
+                            + RunDisplayNames.runId(lastWiped.getRunId()) + ".")
                     .withStyle(ChatFormatting.YELLOW));
             return 1;
         }
@@ -384,7 +387,7 @@ public class CommandRegistry {
 
         MutableComponent confirmation = Component.literal("Post-wipe leaderboard broadcast for run ")
                 .withStyle(ChatFormatting.GREEN)
-                .append(Component.literal(lastWiped.getRunId()).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(RunDisplayNames.runId(lastWiped.getRunId())).withStyle(ChatFormatting.WHITE))
                 .append(Component.literal(".").withStyle(ChatFormatting.GREEN));
         ctx.getSource().sendSystemMessage(confirmation);
 
@@ -421,7 +424,7 @@ public class CommandRegistry {
         lines.add(Component.literal("[HC Autopsy] Full post-wipe leaderboard")
                 .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
         lines.add(Component.literal("Run: ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(run.getWorldName()).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(RunDisplayNames.world(run.getWorldName())).withStyle(ChatFormatting.WHITE))
                 .append(Component.literal(" | Players: ").withStyle(ChatFormatting.GRAY))
                 .append(Component.literal(String.valueOf(rankings.playerCount())).withStyle(ChatFormatting.AQUA)));
 
@@ -470,10 +473,11 @@ public class CommandRegistry {
     }
 
     private void showRunDetails(CommandSourceStack source, RunMetadata meta) {
-        MutableComponent message = Component.literal("=== Run: " + meta.getWorldName() + " ===\n").withStyle(ChatFormatting.GOLD);
+        MutableComponent message = Component.literal("=== Run: " + RunDisplayNames.world(meta.getWorldName()) + " ===\n")
+                .withStyle(ChatFormatting.GOLD);
 
         message.append(Component.literal("ID: ").withStyle(ChatFormatting.GRAY))
-                .append(Component.literal(meta.getRunId()).withStyle(ChatFormatting.DARK_GRAY))
+                .append(Component.literal(RunDisplayNames.runId(meta.getRunId())).withStyle(ChatFormatting.DARK_GRAY))
                 .append(Component.literal("\n"));
 
         message.append(Component.literal("State: ").withStyle(ChatFormatting.GRAY))

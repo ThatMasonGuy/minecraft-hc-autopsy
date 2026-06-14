@@ -19,6 +19,11 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 - Bumped `mod_version` to `1.3.0` and added Modrinth-facing release notes for
   the post-wipe leaderboard feature.
+- Improved Discord post-wipe leaderboard embeds with per-category colors,
+  podium fields, compact overflow rank blocks, and cleaned world/run display
+  names.
+- Trimmed leading `worlds/` / `worlds_` prefixes from player-facing run output
+  while preserving persisted run ids and world metadata.
 - Recorded the completed `1.2.0` Modrinth publish, GitHub validation, GitHub
   Release, and merged-branch cleanup details.
 - Recorded the completed `1.2.1` Modrinth publish, GitHub validation, live

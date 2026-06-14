@@ -28,9 +28,9 @@ It works server-side on dedicated Fabric servers. Players do not need to install
 the mod. When the first player dies in a run, HC Autopsy records the wipe,
 snapshots every player's vanilla stat JSON, aggregates the run, updates lifetime
 totals, broadcasts an in-game wipe summary, and can optionally send a Discord
-webhook summary. It now also posts a run leaderboard after the wipe summary,
-including playtime, blocks broken, damage taken, damage dealt, and diamond ore
-mined.
+webhook summary. It now also posts readable, category-colored run leaderboards
+after the wipe summary, including playtime, blocks broken, damage taken,
+damage dealt, and diamond ore mined.
 
 ## Features
 
@@ -48,8 +48,8 @@ mined.
 - Operator/console-safe tools for continuing a wiped run, recalculating
   lifetime totals, reloading config, broadcasting full post-wipe leaderboards,
   and testing Discord webhooks
-- Optional Discord webhook notifications for wipe summaries and post-wipe
-  leaderboards
+- Optional Discord webhook notifications for wipe summaries and category-colored
+  post-wipe leaderboards
 - Automatic post-wipe awards for playtime, blocks broken, damage taken, damage
   dealt, and diamonds mined
 - Launcher-agnostic app-data storage with first-launch migration from the old

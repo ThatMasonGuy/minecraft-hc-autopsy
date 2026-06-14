@@ -25,7 +25,7 @@ can answer questions like:
 - Allows operator/console admin tools for continuing wiped runs, recalculating
   totals, reloading config, and testing Discord notifications
 - Supports optional Discord webhook notifications with wipe summaries and
-  post-wipe leaderboards
+  category-colored post-wipe leaderboards
 
 ## Supported Environment
 
@@ -66,7 +66,8 @@ When a player dies:
 5. Run-level and lifetime aggregates are updated.
 6. An in-game wipe summary and stat leaderboard are broadcast to online
    players.
-7. Optional Discord wipe summary and leaderboard notifications are sent.
+7. Optional Discord wipe summary and readable leaderboard notifications are
+   sent.
 
 Only runs in the `WIPED` state contribute to lifetime totals. If a wiped run is
 continued with `/hcautopsy run continue <reason>`, lifetime totals are
