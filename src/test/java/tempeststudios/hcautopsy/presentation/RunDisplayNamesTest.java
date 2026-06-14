@@ -28,4 +28,22 @@ class RunDisplayNamesTest {
         assertEquals("world__20260612-231116", RunDisplayNames.runId("world__20260612-231116"));
         assertEquals("Unknown", RunDisplayNames.runId(null));
     }
+
+    @Test
+    void trimsDisplayedRunIdUsingStoredWorldNameWhenAvailable() {
+        assertEquals(
+                "Shared_Health_Hardcore_45__20260612-231116",
+                RunDisplayNames.runId(
+                        "worlds_Shared_Health_Hardcore_45__20260612-231116",
+                        "worlds/Shared_Health_Hardcore_45"
+                )
+        );
+        assertEquals(
+                "worlds_Shared_Health_Hardcore_45__20260612-231116",
+                RunDisplayNames.runId(
+                        "worlds_Shared_Health_Hardcore_45__20260612-231116",
+                        "worlds_Shared_Health_Hardcore_45"
+                )
+        );
+    }
 }

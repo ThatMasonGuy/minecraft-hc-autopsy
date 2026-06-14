@@ -42,6 +42,9 @@ while preserving the launcher-agnostic Tempest Studios app-data storage from
   representative `/hcautopsy` command paths from a server command source, then
   exercises wipe-summary and post-wipe leaderboard broadcast construction and
   server-thread dispatch.
+- The dedicated-server smoke helper seeds a tiny wiped run with saved player
+  snapshots before executing `/hcautopsy leaderboard postwipe`, so the manual
+  command's full ranking path is covered instead of only its no-data branch.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -287,6 +290,8 @@ Known command limitations:
   value for each post-wipe stat category from the latest wiped run.
 - Polished post-wipe Discord leaderboard embeds and hid the noisy leading
   `worlds/` prefix from player-facing run names.
+- Hardened the smoke hook to exercise the full saved-run post-wipe leaderboard
+  command path before publishing.
 - Updated the wipe broadcast smoke hook to construct the post-wipe leaderboard
   from a representative stat snapshot.
 - Bumped `mod_version` to `1.3.0` and added

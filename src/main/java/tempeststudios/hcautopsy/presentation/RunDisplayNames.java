@@ -48,4 +48,29 @@ public final class RunDisplayNames {
 
         return trimmed;
     }
+
+    public static String runId(String runId, String worldName) {
+        String displayedRunId = runId(runId);
+        if (runId == null || runId.isBlank() || worldName == null || worldName.isBlank()) {
+            return displayedRunId;
+        }
+
+        String trimmedWorldName = worldName.trim();
+        String displayedWorldName = world(trimmedWorldName);
+        if (trimmedWorldName.equals(displayedWorldName)) {
+            return runId.trim();
+        }
+
+        String originalPrefix = sanitizeRunIdWorldPrefix(trimmedWorldName) + "__";
+        String displayedPrefix = sanitizeRunIdWorldPrefix(displayedWorldName) + "__";
+        String trimmedRunId = runId.trim();
+        if (trimmedRunId.startsWith(originalPrefix)) {
+            return displayedPrefix + trimmedRunId.substring(originalPrefix.length());
+        }
+        return displayedRunId;
+    }
+
+    private static String sanitizeRunIdWorldPrefix(String worldName) {
+        return worldName.replaceAll("[^a-zA-Z0-9_-]", "_");
+    }
 }

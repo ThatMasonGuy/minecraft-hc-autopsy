@@ -2,11 +2,16 @@ package tempeststudios.hcautopsy;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
+import tempeststudios.hcautopsy.data.RunMetadata;
+import tempeststudios.hcautopsy.data.WipeCause;
+import tempeststudios.hcautopsy.persistence.PersistenceManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.UUID;
 
 public final class HCAutopsyServerSmokeTest {
     private static final String SMOKE_TEST_PROPERTY = "hcautopsy.smokeTest";
@@ -84,6 +89,7 @@ public final class HCAutopsyServerSmokeTest {
         requireCommand(server, "hcautopsy", "recalc");
         requireCommand(server, "hcautopsy", "config", "reload");
         requireCommand(server, "hcautopsy", "discord", "test");
+        seedPostWipeLeaderboardRun();
         executeSmokeCommands(server);
         exerciseWipeSummaryBroadcast();
     }
@@ -121,11 +127,11 @@ public final class HCAutopsyServerSmokeTest {
                 "hcautopsy status",
                 "hcautopsy run list",
                 "hcautopsy run last",
+                "hcautopsy leaderboard postwipe",
                 "hcautopsy run continue smoke-test",
                 "hcautopsy player SmokeTester totals",
                 "hcautopsy players",
                 "hcautopsy leaderboard playtime",
-                "hcautopsy leaderboard postwipe",
                 "hcautopsy server totals",
                 "hcautopsy recalc",
                 "hcautopsy config reload",
@@ -149,6 +155,63 @@ public final class HCAutopsyServerSmokeTest {
         } catch (ReflectiveOperationException | RuntimeException e) {
             throw new IllegalStateException("Server smoke test could not execute /" + command + ".", e);
         }
+    }
+
+    private static void seedPostWipeLeaderboardRun() {
+        PersistenceManager persistence = HCAutopsy.getPersistence();
+        if (persistence == null) {
+            throw new IllegalStateException("Server smoke test could not seed a post-wipe leaderboard without persistence.");
+        }
+
+        UUID topPlayer = UUID.nameUUIDFromBytes("hc-autopsy-smoke-top-player".getBytes(StandardCharsets.UTF_8));
+        UUID challenger = UUID.nameUUIDFromBytes("hc-autopsy-smoke-challenger".getBytes(StandardCharsets.UTF_8));
+        persistence.rememberPlayer(topPlayer, "SmokeTester");
+        persistence.rememberPlayer(challenger, "SmokeRival");
+
+        RunMetadata smokeRun = new RunMetadata("worlds_SmokeLeaderboard__postwipe-smoke", "worlds/SmokeLeaderboard");
+        smokeRun.addParticipant(topPlayer);
+        smokeRun.addParticipant(challenger);
+        smokeRun.markWiped(WipeCause.create(
+                topPlayer,
+                "SmokeTester",
+                "SmokeTester tested the leaderboard path",
+                "smoke_test",
+                null,
+                null
+        ));
+
+        persistence.saveMetadata(smokeRun);
+        persistence.savePlayerSnapshot(smokeRun.getRunId(), topPlayer, """
+                {
+                  "stats": {
+                    "minecraft:custom": {
+                      "minecraft:play_time": 4800,
+                      "minecraft:damage_taken": 30,
+                      "minecraft:damage_dealt": 90
+                    },
+                    "minecraft:mined": {
+                      "minecraft:stone": 16,
+                      "minecraft:diamond_ore": 2,
+                      "minecraft:deepslate_diamond_ore": 1
+                    }
+                  }
+                }
+                """);
+        persistence.savePlayerSnapshot(smokeRun.getRunId(), challenger, """
+                {
+                  "stats": {
+                    "minecraft:custom": {
+                      "minecraft:play_time": 2400,
+                      "minecraft:damage_taken": 20,
+                      "minecraft:damage_dealt": 120
+                    },
+                    "minecraft:mined": {
+                      "minecraft:dirt": 9,
+                      "minecraft:diamond_ore": 1
+                    }
+                  }
+                }
+                """);
     }
 
     private static void exerciseWipeSummaryBroadcast() {

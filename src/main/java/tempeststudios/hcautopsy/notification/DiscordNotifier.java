@@ -183,7 +183,7 @@ public class DiscordNotifier {
 
         // Footer with run ID
         JsonObject footer = new JsonObject();
-        footer.addProperty("text", "Run: " + RunDisplayNames.runId(run.getRunId()));
+        footer.addProperty("text", "Run: " + RunDisplayNames.runId(run.getRunId(), run.getWorldName()));
         embed.add("footer", footer);
 
         embed.addProperty("timestamp", Instant.ofEpochMilli(run.getEndedAt()).toString());
@@ -210,7 +210,7 @@ public class DiscordNotifier {
         embed.add("fields", fields);
 
         JsonObject footer = new JsonObject();
-        footer.addProperty("text", "Run: " + RunDisplayNames.runId(run.getRunId()));
+        footer.addProperty("text", "Run: " + RunDisplayNames.runId(run.getRunId(), run.getWorldName()));
         embed.add("footer", footer);
 
         long timestamp = run.getEndedAt() > 0 ? run.getEndedAt() : Instant.now().toEpochMilli();
@@ -275,7 +275,7 @@ public class DiscordNotifier {
         embed.addProperty("color", style.color());
 
         JsonObject footer = new JsonObject();
-        footer.addProperty("text", "Run: " + RunDisplayNames.runId(run.getRunId()));
+        footer.addProperty("text", "Run: " + RunDisplayNames.runId(run.getRunId(), run.getWorldName()));
         embed.add("footer", footer);
 
         long timestamp = run.getEndedAt() > 0 ? run.getEndedAt() : Instant.now().toEpochMilli();
