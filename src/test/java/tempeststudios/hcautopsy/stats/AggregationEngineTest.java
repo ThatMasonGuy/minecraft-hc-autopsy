@@ -59,4 +59,25 @@ class AggregationEngineTest {
         assertNotNull(json);
         assertEquals(0, json.entrySet().size());
     }
+
+    @Test
+    void extractsCategoryTotalsAndPathSums() {
+        String snapshot = """
+                {
+                  "stats": {
+                    "minecraft:mined": {
+                      "minecraft:stone": 12,
+                      "minecraft:diamond_ore": 2,
+                      "minecraft:deepslate_diamond_ore": 3
+                    }
+                  }
+                }
+                """;
+
+        assertEquals(17, aggregationEngine.extractStatCategory(snapshot, "stats.minecraft:mined"));
+        assertEquals(5, aggregationEngine.extractStatSum(snapshot, List.of(
+                "stats.minecraft:mined.minecraft:diamond_ore",
+                "stats.minecraft:mined.minecraft:deepslate_diamond_ore"
+        )));
+    }
 }

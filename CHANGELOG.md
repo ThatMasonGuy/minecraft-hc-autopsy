@@ -5,8 +5,18 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+### Added
+
+- Added automatic post-wipe stat leaderboards after the wipe summary in game
+  chat and Discord, covering most time played, blocks broken, damage taken,
+  damage dealt, and diamonds mined.
+- Added reusable wipe leaderboard report building on top of the existing stat
+  aggregation helpers, including category totals and summed diamond ore paths.
+
 ### Changed
 
+- Bumped `mod_version` to `1.3.0` and added Modrinth-facing release notes for
+  the post-wipe leaderboard feature.
 - Recorded the completed `1.2.0` Modrinth publish, GitHub validation, GitHub
   Release, and merged-branch cleanup details.
 - Recorded the completed `1.2.1` Modrinth publish, GitHub validation, live

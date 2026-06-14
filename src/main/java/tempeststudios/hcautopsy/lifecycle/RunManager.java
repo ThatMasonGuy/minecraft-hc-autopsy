@@ -3,6 +3,7 @@ package tempeststudios.hcautopsy.lifecycle;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.ChatFormatting;
 import tempeststudios.hcautopsy.HCAutopsy;
 import tempeststudios.hcautopsy.compat.PlayerMessageCompat;
@@ -14,7 +15,10 @@ import tempeststudios.hcautopsy.notification.DiscordNotifier;
 import tempeststudios.hcautopsy.persistence.PersistenceManager;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
 import tempeststudios.hcautopsy.stats.StatSnapshotService;
+import tempeststudios.hcautopsy.stats.WipeLeaderboardBuilder;
+import tempeststudios.hcautopsy.stats.WipeLeaderboardReport;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,6 +47,7 @@ public class RunManager {
     private final PersistenceManager persistence;
     private final StatSnapshotService statService;
     private final AggregationEngine aggregationEngine;
+    private final WipeLeaderboardBuilder wipeLeaderboardBuilder;
     private final ScheduledExecutorService executor;
     private final Object runLock = new Object();
 
@@ -61,6 +66,7 @@ public class RunManager {
         this.persistence = persistence;
         this.statService = new StatSnapshotService(server);
         this.aggregationEngine = new AggregationEngine();
+        this.wipeLeaderboardBuilder = new WipeLeaderboardBuilder();
         this.discordNotifier = discordNotifier;
         this.statSaveDelayMs = config != null ? config.getStatSaveDelayMs() : DEFAULT_STAT_SAVE_DELAY_MS;
         this.executor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -210,11 +216,12 @@ public class RunManager {
             }
 
             HCAutopsy.LOGGER.info("Wipe stats captured and lifetime stats updated");
-            broadcastWipeSummary(wipedRun, snapshots, aggregated);
+            WipeLeaderboardReport leaderboard = wipeLeaderboardBuilder.build(snapshots, this::playerDisplayName);
+            broadcastWipeSummary(wipedRun, snapshots, aggregated, leaderboard);
 
             // Send Discord notification
             if (discordNotifier != null && discordNotifier.isConfigured()) {
-                discordNotifier.sendWipeNotification(wipedRun, snapshots.size(), aggregated);
+                discordNotifier.sendWipeNotification(wipedRun, snapshots.size(), aggregated, leaderboard);
             }
 
         } catch (Exception e) {
@@ -238,22 +245,19 @@ public class RunManager {
     }
 
     private void broadcastWipeSummary(RunMetadata wipedRun, Map<UUID, String> snapshots, String aggregated) {
+        WipeLeaderboardReport leaderboard = wipeLeaderboardBuilder.build(snapshots, this::playerDisplayName);
+        broadcastWipeSummary(wipedRun, snapshots, aggregated, leaderboard);
+    }
+
+    private void broadcastWipeSummary(
+            RunMetadata wipedRun,
+            Map<UUID, String> snapshots,
+            String aggregated,
+            WipeLeaderboardReport leaderboard
+    ) {
         WipeCause cause = wipedRun.getWipeCause();
         if (cause == null) {
             return;
-        }
-
-        String topPlayer = null;
-        long topPlayTime = -1;
-        for (Map.Entry<UUID, String> snapshot : snapshots.entrySet()) {
-            Long playTime = aggregationEngine.extractStat(
-                    snapshot.getValue(),
-                    "stats.minecraft:custom.minecraft:play_time"
-            );
-            if (playTime != null && playTime > topPlayTime) {
-                topPlayTime = playTime;
-                topPlayer = playerDisplayName(snapshot.getKey());
-            }
         }
 
         Long totalPlayTime = aggregationEngine.extractStat(aggregated, "stats.minecraft:custom.minecraft:play_time");
@@ -272,12 +276,8 @@ public class RunManager {
                 + (deaths == null ? "unknown" : deaths))
                 .withStyle(ChatFormatting.AQUA);
 
-        Component leader = topPlayer == null
-                ? Component.literal("Top playtime: unknown").withStyle(ChatFormatting.YELLOW)
-                : Component.literal("Top playtime: " + topPlayer + " ("
-                + formatDuration((topPlayTime / 20) * 1000) + ")").withStyle(ChatFormatting.YELLOW);
-
-        List<Component> lines = List.of(header, death, duration, totals, leader);
+        List<Component> lines = new ArrayList<>(List.of(header, death, duration, totals));
+        lines.addAll(buildLeaderboardLines(leaderboard));
 
         try {
             server.execute(() -> {
@@ -308,10 +308,33 @@ public class RunManager {
         }
     }
 
+    private List<Component> buildLeaderboardLines(WipeLeaderboardReport leaderboard) {
+        if (leaderboard == null || leaderboard.isEmpty()) {
+            return List.of();
+        }
+
+        List<Component> lines = new ArrayList<>();
+        lines.add(Component.literal("[HC Autopsy] Run leaderboard")
+                .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+        for (WipeLeaderboardReport.Entry entry : leaderboard.entries()) {
+            MutableComponent line = Component.literal("- ").withStyle(ChatFormatting.DARK_GRAY)
+                    .append(Component.literal(entry.label()).withStyle(ChatFormatting.YELLOW))
+                    .append(Component.literal(" | ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(entry.playerName()).withStyle(ChatFormatting.WHITE, ChatFormatting.BOLD))
+                    .append(Component.literal(" | ").withStyle(ChatFormatting.GRAY))
+                    .append(Component.literal(entry.formattedValue()).withStyle(ChatFormatting.AQUA));
+            lines.add(line);
+        }
+        return lines;
+    }
+
     public void broadcastSmokeTestWipeSummary() {
+        UUID smokePlayer = UUID.nameUUIDFromBytes("hc-autopsy-smoke-player".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        persistence.rememberPlayer(smokePlayer, "SmokeTester");
+
         RunMetadata smokeRun = new RunMetadata("smoke__wipe-summary", statService.getWorldName());
         smokeRun.markWiped(WipeCause.create(
-                UUID.nameUUIDFromBytes("hc-autopsy-smoke-player".getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                smokePlayer,
                 "SmokeTester",
                 "SmokeTester hit the ground too hard",
                 "fall",
@@ -319,7 +342,24 @@ public class RunManager {
                 null
         ));
 
-        broadcastWipeSummary(smokeRun, Map.of(), "{}");
+        Map<UUID, String> snapshots = Map.of(smokePlayer, """
+                {
+                  "stats": {
+                    "minecraft:custom": {
+                      "minecraft:play_time": 2400,
+                      "minecraft:damage_taken": 45,
+                      "minecraft:damage_dealt": 120,
+                      "minecraft:deaths": 1
+                    },
+                    "minecraft:mined": {
+                      "minecraft:stone": 16,
+                      "minecraft:diamond_ore": 1,
+                      "minecraft:deepslate_diamond_ore": 2
+                    }
+                  }
+                }
+                """);
+        broadcastWipeSummary(smokeRun, snapshots, aggregationEngine.aggregate(snapshots.values()));
     }
 
     /**

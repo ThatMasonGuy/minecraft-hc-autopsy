@@ -148,7 +148,8 @@ normalization:
 - `MinecraftServer#getWorldPath(LevelResource.PLAYER_STATS_DIR)`
 - `MinecraftServer#getWorldData().getLevelName()`
 - `ServerPlayer#getStats().save()`
-- `PlayerMessageCompat` for in-game wipe summary player message delivery
+- `PlayerMessageCompat` for in-game wipe summary and post-wipe leaderboard
+  player message delivery
 - Tempest Studios app-data storage with guarded migration from the old Fabric
   Loader config directory
 - Mixin compatibility levels
@@ -209,8 +210,9 @@ Implemented shim:
 - `ServerPermissionCompat` for legacy integer permission checks and modern
   permission-set checks. Admin commands map to command permission level 2 /
   gamemaster, using `COMMANDS_GAMEMASTER` or the equivalent runtime field.
-- `PlayerMessageCompat` for delayed wipe summary broadcasts to online players,
-  including named and intermediary method fallbacks and fail-soft delivery.
+- `PlayerMessageCompat` for delayed wipe summary and post-wipe leaderboard
+  broadcasts to online players, including named and intermediary method
+  fallbacks and fail-soft delivery.
 
 ### Stat Snapshot Paths
 

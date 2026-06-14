@@ -1,9 +1,10 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.2.1` is published on Modrinth and GitHub.
-The release fixes the delayed in-game wipe summary broadcast crash path and
-moves HC Autopsy config/data into a launcher-agnostic Tempest Studios app-data
-folder with guarded first-launch migration from `config/hc-autopsy/`.
+Current checkpoint: HC Autopsy `1.3.0` is in development after the published
+`1.2.1` Modrinth/GitHub patch. The current implementation adds automatic
+post-wipe stat leaderboards after the existing wipe summary in game chat and
+Discord while preserving the launcher-agnostic Tempest Studios app-data storage
+from `1.2.1`.
 
 ## Project Workflow
 
@@ -38,7 +39,8 @@ folder with guarded first-launch migration from `config/hc-autopsy/`.
   and newer record-style text event API.
 - The dedicated-server smoke helper now verifies registration and executes
   representative `/hcautopsy` command paths from a server command source, then
-  exercises wipe-summary broadcast construction and server-thread dispatch.
+  exercises wipe-summary and post-wipe leaderboard broadcast construction and
+  server-thread dispatch.
 - Fallback probes exist for `1.20-1.20.4`, `1.20.5-1.21.10`, and
   `1.20.5-1.21.11`. These are not the recommended release shape unless
   evidence forces a split.
@@ -67,6 +69,8 @@ folder with guarded first-launch migration from `config/hc-autopsy/`.
   lifetime player totals, and server lifetime totals.
 - Optional Discord notifications use a webhook URL stored in
   the app-data `config.json`.
+- Wipe finalization now builds a post-wipe leaderboard from the captured player
+  snapshots and sends it after the wipe summary in both game chat and Discord.
 - `.env` is ignored for local publishing and metadata-update secrets.
 
 ## Current Command Root
@@ -267,6 +271,13 @@ Known command limitations:
   `1.2.1+mc26.1-26.2-pre-3`.
 - Tagged the exact publish commit as `v1.2.1` and created the GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.2.1`.
+- Added automatic post-wipe leaderboards for most time played, blocks broken,
+  damage taken, damage dealt, and diamonds mined from regular plus deepslate
+  diamond ore.
+- Updated the wipe broadcast smoke hook to construct the post-wipe leaderboard
+  from a representative stat snapshot.
+- Bumped `mod_version` to `1.3.0` and added
+  `gradle/release-notes/1.3.0.md` for the leaderboard feature.
 
 ## Current Compatibility Conclusion
 

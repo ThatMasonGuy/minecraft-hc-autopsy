@@ -18,12 +18,14 @@ can answer questions like:
 - Stores per-run metadata, per-player snapshots, aggregated run totals, and a
   persisted player-name cache
 - Maintains lifetime player and server totals across wiped runs
-- Broadcasts an in-game wipe summary after stat capture finishes
+- Broadcasts an in-game wipe summary and post-wipe stat leaderboard after stat
+  capture finishes
 - Provides `/hcautopsy` commands for run status, run history, player lists,
   lifetime totals, and leaderboards
 - Allows operator/console admin tools for continuing wiped runs, recalculating
   totals, reloading config, and testing Discord notifications
-- Supports optional Discord webhook notifications
+- Supports optional Discord webhook notifications with wipe summaries and
+  post-wipe leaderboards
 
 ## Supported Environment
 
@@ -62,8 +64,9 @@ When a player dies:
 3. The run is immediately marked `WIPED` with captured death metadata.
 4. After a short delay, player stat files are captured and persisted.
 5. Run-level and lifetime aggregates are updated.
-6. An in-game wipe summary is broadcast to online players.
-7. Optional Discord notification is sent.
+6. An in-game wipe summary and stat leaderboard are broadcast to online
+   players.
+7. Optional Discord wipe summary and leaderboard notifications are sent.
 
 Only runs in the `WIPED` state contribute to lifetime totals. If a wiped run is
 continued with `/hcautopsy run continue <reason>`, lifetime totals are
@@ -287,6 +290,8 @@ smoke record.
   `/hcautopsy` command tree
 - `src/main/java/tempeststudios/hcautopsy/notification/DiscordNotifier.java` -
   webhook sender
+- `src/main/java/tempeststudios/hcautopsy/stats/WipeLeaderboardBuilder.java` -
+  post-wipe leaderboard builder
 
 ## Project Docs
 

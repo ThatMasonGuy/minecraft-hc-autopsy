@@ -181,4 +181,65 @@ public class AggregationEngine {
             return null;
         }
     }
+
+    /**
+     * Extract and sum the direct numeric values inside a stat category.
+     *
+     * @param snapshot Raw JSON snapshot
+     * @param categoryPath Dot-separated path to a stat category
+     * @return The category sum, or null if the category is not present
+     */
+    public Long extractStatCategory(String snapshot, String categoryPath) {
+        try {
+            JsonObject json = parse(snapshot);
+            String[] parts = categoryPath.split("\\.");
+            JsonElement current = json;
+
+            for (String part : parts) {
+                if (current == null || !current.isJsonObject()) {
+                    return null;
+                }
+                current = current.getAsJsonObject().get(part);
+            }
+
+            if (current == null || !current.isJsonObject()) {
+                return null;
+            }
+
+            long sum = 0;
+            boolean foundValue = false;
+            for (Map.Entry<String, JsonElement> entry : current.getAsJsonObject().entrySet()) {
+                JsonElement value = entry.getValue();
+                if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isNumber()) {
+                    sum += value.getAsLong();
+                    foundValue = true;
+                }
+            }
+            return foundValue ? sum : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Extract and sum several exact stat paths.
+     *
+     * @param snapshot Raw JSON snapshot
+     * @param paths Dot-separated stat paths
+     * @return The summed value, or null if none of the paths are present
+     */
+    public Long extractStatSum(String snapshot, Collection<String> paths) {
+        long sum = 0;
+        boolean foundValue = false;
+
+        for (String path : paths) {
+            Long value = extractStat(snapshot, path);
+            if (value != null) {
+                sum += value;
+                foundValue = true;
+            }
+        }
+
+        return foundValue ? sum : null;
+    }
 }

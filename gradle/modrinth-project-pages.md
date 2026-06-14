@@ -28,7 +28,9 @@ It works server-side on dedicated Fabric servers. Players do not need to install
 the mod. When the first player dies in a run, HC Autopsy records the wipe,
 snapshots every player's vanilla stat JSON, aggregates the run, updates lifetime
 totals, broadcasts an in-game wipe summary, and can optionally send a Discord
-webhook summary.
+webhook summary. It now also posts a run leaderboard after the wipe summary,
+including playtime, blocks broken, damage taken, damage dealt, and diamond ore
+mined.
 
 ## Features
 
@@ -39,12 +41,16 @@ webhook summary.
 - Stores per-run metadata, per-player snapshots, aggregated run totals, and
   cached player names
 - Maintains lifetime player and server totals across wiped runs
-- In-game wipe summary after stat capture completes
+- In-game wipe summary and post-wipe stat leaderboard after stat capture
+  completes
 - `/hcautopsy` commands for status, run history, cached players, player totals,
   server totals, and lifetime leaderboards
 - Operator/console-safe tools for continuing a wiped run, recalculating
   lifetime totals, reloading config, and testing Discord webhooks
-- Optional Discord webhook notifications for wipe summaries
+- Optional Discord webhook notifications for wipe summaries and post-wipe
+  leaderboards
+- Automatic post-wipe awards for playtime, blocks broken, damage taken, damage
+  dealt, and diamonds mined
 - Launcher-agnostic app-data storage with first-launch migration from the old
   `config/hc-autopsy/` folder
 - Defensive config/data loading and atomic writes for persisted HC Autopsy data
@@ -57,6 +63,7 @@ webhook summary.
 - Community worlds with seasonal resets
 - Post-wipe stat review
 - Comparing lifetime playtime, deaths, distance walked, and jumps
+- Calling out the run's biggest post-wipe stat winners
 - Long-term server history
 - Discord communities that want automatic wipe summaries
 - Players who want the receipts after a run goes wrong

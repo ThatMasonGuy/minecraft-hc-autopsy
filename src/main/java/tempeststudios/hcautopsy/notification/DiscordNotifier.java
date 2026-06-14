@@ -9,6 +9,7 @@ import tempeststudios.hcautopsy.config.ModConfig;
 import tempeststudios.hcautopsy.data.RunMetadata;
 import tempeststudios.hcautopsy.data.WipeCause;
 import tempeststudios.hcautopsy.stats.AggregationEngine;
+import tempeststudios.hcautopsy.stats.WipeLeaderboardReport;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -60,6 +61,15 @@ public class DiscordNotifier {
      * @param aggregatedStats Aggregated stats JSON for extracting headlines
      */
     public CompletableFuture<Void> sendWipeNotification(RunMetadata run, int playerCount, String aggregatedStats) {
+        return sendWipeNotification(run, playerCount, aggregatedStats, null);
+    }
+
+    public CompletableFuture<Void> sendWipeNotification(
+            RunMetadata run,
+            int playerCount,
+            String aggregatedStats,
+            WipeLeaderboardReport leaderboard
+    ) {
         if (!isConfigured()) {
             return CompletableFuture.completedFuture(null);
         }
@@ -68,6 +78,9 @@ public class DiscordNotifier {
             try {
                 JsonObject embed = buildWipeEmbed(run, playerCount, aggregatedStats);
                 sendWebhook(embed);
+                if (leaderboard != null && !leaderboard.isEmpty()) {
+                    sendWebhook(buildLeaderboardEmbed(run, leaderboard));
+                }
                 HCAutopsy.LOGGER.info("Discord notification sent for wipe");
             } catch (Exception e) {
                 HCAutopsy.LOGGER.error("Failed to send Discord notification: {}", e.getMessage());
@@ -146,6 +159,36 @@ public class DiscordNotifier {
         return embed;
     }
 
+    private JsonObject buildLeaderboardEmbed(RunMetadata run, WipeLeaderboardReport leaderboard) {
+        JsonObject embed = new JsonObject();
+        embed.addProperty("title", "HC Autopsy Run Leaderboard: " + run.getWorldName());
+        embed.addProperty("description", buildLeaderboardDescription(leaderboard));
+        embed.addProperty("color", 0xF1C40F);
+
+        JsonObject footer = new JsonObject();
+        footer.addProperty("text", "Run ID: " + run.getRunId());
+        embed.add("footer", footer);
+
+        long timestamp = run.getEndedAt() > 0 ? run.getEndedAt() : Instant.now().toEpochMilli();
+        embed.addProperty("timestamp", Instant.ofEpochMilli(timestamp).toString());
+
+        return embed;
+    }
+
+    private String buildLeaderboardDescription(WipeLeaderboardReport leaderboard) {
+        StringBuilder description = new StringBuilder();
+        for (WipeLeaderboardReport.Entry entry : leaderboard.entries()) {
+            description.append("**")
+                    .append(entry.label())
+                    .append("** | ")
+                    .append(entry.playerName())
+                    .append(" | ")
+                    .append(entry.formattedValue())
+                    .append("\n");
+        }
+        return description.toString().trim();
+    }
+
     /**
      * Add headline stats to the embed fields.
      */
@@ -160,13 +203,13 @@ public class DiscordNotifier {
         }
 
         // Total blocks mined (sum of all mined blocks)
-        Long blocksMined = extractStatCategory(aggregatedStats, "stats.minecraft:mined");
+        Long blocksMined = aggregationEngine.extractStatCategory(aggregatedStats, "stats.minecraft:mined");
         if (blocksMined != null && blocksMined > 0) {
             fields.add(createField("Blocks Mined", formatNumber(blocksMined), true));
         }
 
         // Total mobs killed
-        Long mobsKilled = extractStatCategory(aggregatedStats, "stats.minecraft:killed");
+        Long mobsKilled = aggregationEngine.extractStatCategory(aggregatedStats, "stats.minecraft:killed");
         if (mobsKilled != null && mobsKilled > 0) {
             fields.add(createField("Mobs Killed", formatNumber(mobsKilled), true));
         }
@@ -185,35 +228,6 @@ public class DiscordNotifier {
                 "stats.minecraft:custom.minecraft:deaths");
         if (deaths != null) {
             fields.add(createField("Total Deaths", String.valueOf(deaths), true));
-        }
-    }
-
-    /**
-     * Extract the sum of all values in a stat category.
-     */
-    private Long extractStatCategory(String stats, String categoryPath) {
-        try {
-            JsonObject json = aggregationEngine.parse(stats);
-            String[] parts = categoryPath.split("\\.");
-            JsonObject current = json;
-
-            for (String part : parts) {
-                if (!current.has(part) || !current.get(part).isJsonObject()) {
-                    return null;
-                }
-                current = current.getAsJsonObject(part);
-            }
-
-            // Sum all numeric values in this category
-            long sum = 0;
-            for (var entry : current.entrySet()) {
-                if (entry.getValue().isJsonPrimitive() && entry.getValue().getAsJsonPrimitive().isNumber()) {
-                    sum += entry.getValue().getAsLong();
-                }
-            }
-            return sum;
-        } catch (Exception e) {
-            return null;
         }
     }
 

@@ -33,7 +33,8 @@ Each automated dedicated-server smoke launch should:
 - verify the expected `/hcautopsy` subcommands are registered
 - execute representative `/hcautopsy` command paths from a server command
   source, including admin-gated commands
-- exercise wipe-summary broadcast construction and server-thread dispatch
+- exercise wipe-summary and post-wipe leaderboard broadcast construction and
+  server-thread dispatch
 - verify config and persistence initialization
 - verify an active run was created or resumed
 - log a clear pass marker such as `HCAUTOPSY_SERVER_SMOKE_TEST_PASS`
