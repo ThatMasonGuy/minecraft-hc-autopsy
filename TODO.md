@@ -1,10 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.3.0` is published on Modrinth and GitHub.
-The release adds automatic post-wipe stat leaderboards after the existing wipe
-summary in game chat and Discord, plus cleaner Discord leaderboard embeds and
-player-facing world names, while preserving the launcher-agnostic Tempest
-Studios app-data storage from `1.2.1`.
+Current checkpoint: HC Autopsy `1.4.0` is prepared locally for the Minecraft
+`26.2` final and `26.3-snapshot-1` compatibility release. HC Autopsy `1.3.0`
+remains the latest published Modrinth/GitHub release until the guarded publish
+workflow completes.
 
 ## Project Workflow
 
@@ -23,12 +22,14 @@ Studios app-data storage from `1.2.1`.
   development.
 - Current Gradle setup is profile-driven. The default profile is `1.21.11`.
 - `supported_minecraft_version_profiles` currently contains
-  `1.20-1.21.11` and `26.1-26.2-pre-3`.
+  `1.20-1.21.11` and `26.1-26.3-snapshot-1`.
 - `candidate_minecraft_version_profiles` is intentionally empty after
   promotion.
 - Supported profiles have passing dedicated-server smoke records in
   `gradle/smoke-tests.json` for every exact Minecraft runtime they claim.
 - Supported profiles pass compile and release-jar metadata probes.
+- The `26.1-26.3-snapshot-1` profile uses the existing `26.x` compat group; no
+  new Java shim was required for Minecraft `26.2` final or `26.3-snapshot-1`.
 - Admin command gates use `ServerPermissionCompat`, allowing console,
   command-block, and operator-player sources with command permission level 2 /
   gamemaster or higher across the supported profiles.
@@ -316,20 +317,37 @@ Known command limitations:
   `1.3.0+mc26.1-26.2-pre-3`.
 - Tagged the exact publish commit as `v1.3.0` and created the GitHub Release:
   `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.3.0`.
+- Added exact runtime profiles for Minecraft `26.2` and `26.3-snapshot-1`.
+- Added the broad `26.1-26.3-snapshot-1` release profile using the existing
+  `26.x` compat group, Minecraft `26.2` as the compile anchor, Fabric Loader
+  `0.19.3`, Fabric API `0.153.0+26.2`, Loom `1.17-SNAPSHOT`, Java `25`, and
+  Gradle `9.5.1`.
+- Verified the new 26.x release jar metadata with
+  `.\gradlew.bat buildRelease "-Pminecraft_version_profile=26.1-26.3-snapshot-1" --no-daemon --console=plain`.
+- Passed local dedicated-server smoke tests for the new 26.x jar on Minecraft
+  `26.1`, `26.1.1`, `26.1.2`, `26.2`, and `26.3-snapshot-1`, with
+  `commandsExecuted=true` and the seeded post-wipe leaderboard path covered.
+- Promoted `26.1-26.3-snapshot-1` to supported and bumped `mod_version` to
+  `1.4.0` with Modrinth-facing release notes.
+- Completed the local `1.4.0` Modrinth dry-run gate with
+  `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain`. The run
+  repeated all 24 supported dedicated-server smokes with `commandsExecuted=true`
+  and wrote a two-entry upload plan for `1.4.0+mc1.20-1.21.11` and
+  `1.4.0+mc26.1-26.3-snapshot-1`.
 
 ## Current Compatibility Conclusion
 
 The current supported release shape is the preferred two-artifact plan:
 
 - `1.20-1.21.11`
-- `26.1-26.2-pre-3`
+- `26.1-26.3-snapshot-1`
 
 The target migration should use compatibility-group profiles rather than one jar
 per exact Minecraft patch. The active supported list now uses the broadest
 honest shape proven by compile, metadata, and launcher smoke validation:
 
 - supported: `1.20-1.21.11`
-- supported: `26.1-26.2-pre-3`, using source compat group
+- supported: `26.1-26.3-snapshot-1`, using source compat group
   `26.x`
 - candidates: none
 
@@ -349,10 +367,10 @@ transplant close to the donor and preserves the expected `26.x` non-remap lane.
 ## Migration Goal
 
 Create a single-repo release pipeline that can build, validate, and publish HC
-Autopsy for Minecraft `1.20` through `26.2-pre-3` using the fewest honest
+Autopsy for Minecraft `1.20` through `26.3-snapshot-1` using the fewest honest
 release artifacts possible. The preferred outcome is two artifacts:
-`1.20-1.21.11` and `26.1-26.2-pre-3`. A three-artifact fallback is acceptable
-if Java/API boundaries require it.
+`1.20-1.21.11` and `26.1-26.3-snapshot-1`. A three-artifact fallback is
+acceptable if Java/API boundaries require it.
 
 Each release profile should:
 
@@ -430,7 +448,7 @@ candidate cannot honestly hold.
    - Added the `smokelaunch` module.
    - Added dedicated-server smoke tests as the required launcher gate.
    - Recorded passing supported smoke rows for every exact runtime claimed by
-     `1.20-1.21.11` and `26.1-26.2-pre-3`.
+     `1.20-1.21.11` and `26.1-26.3-snapshot-1`.
    - Smoke now verifies command registration and executes representative
      `/hcautopsy` command paths.
 
@@ -448,7 +466,7 @@ candidate cannot honestly hold.
     - `1.0.0` published successfully through GitHub Actions run `26956796078`.
 
 11. Release promotion.
-    - Completed for `1.20-1.21.11` and `26.1-26.2-pre-3`.
+    - Completed for `1.20-1.21.11` and `26.1-26.3-snapshot-1`.
     - Tagged the exact publish commit with `v1.0.0`.
     - Created the GitHub Release for `v1.0.0`.
 

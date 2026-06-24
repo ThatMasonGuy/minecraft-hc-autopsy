@@ -32,11 +32,11 @@ can answer questions like:
 Supported release profiles:
 
 - Minecraft: `1.20` through `1.21.11` as profile `1.20-1.21.11`
-- Minecraft: `26.1`, `26.1.1`, `26.1.2`, and `26.2-pre-3` as profile
-  `26.1-26.2-pre-3`
+- Minecraft: `26.1`, `26.1.1`, `26.1.2`, `26.2`, and
+  `26.3-snapshot-1` as profile `26.1-26.3-snapshot-1`
 - Fabric Loader: profile-derived
 - Fabric API: required
-- Java: `17+` for `1.20-1.21.11`; `25+` for `26.1-26.2-pre-3`
+- Java: `17+` for `1.20-1.21.11`; `25+` for `26.1-26.3-snapshot-1`
 - Primary install: dedicated Fabric server
 - Target environment: server-only
 

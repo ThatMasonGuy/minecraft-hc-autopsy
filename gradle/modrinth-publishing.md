@@ -150,6 +150,17 @@ The live Modrinth project summary and description body were updated from
 Before/after readback snapshots were saved under ignored `build/modrinth/`
 artifacts.
 
+For `1.4.0` release prep on 2026-06-24, the local dry run completed the full
+publish-validation path, wrote `build/modrinth/upload-plan.json`, and did not
+call the Modrinth API. The plan contained:
+
+```text
+1.4.0+mc1.20-1.21.11
+1.4.0+mc26.1-26.3-snapshot-1
+```
+
+Both entries used `gradle/release-notes/1.4.0.md`.
+
 ## Git Tags And GitHub Releases
 
 After a real Modrinth publish succeeds, create an annotated Git tag for the

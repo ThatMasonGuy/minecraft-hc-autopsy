@@ -5,8 +5,28 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+### Added
+
+- Added the `26.1-26.3-snapshot-1` supported profile for Minecraft `26.1`,
+  `26.1.1`, `26.1.2`, `26.2`, and `26.3-snapshot-1` on the existing `26.x`
+  compat group.
+- Added exact smoke runtime profiles for Minecraft `26.2` and
+  `26.3-snapshot-1`.
+- Added Modrinth-facing release notes for `1.4.0`.
+
 ### Changed
 
+- Bumped `mod_version` to `1.4.0` for the Minecraft `26.2` final and
+  `26.3-snapshot-1` compatibility release.
+- Promoted the 26.x publish profile from `26.1-26.2-pre-3` to
+  `26.1-26.3-snapshot-1` after the same 26.x jar passed dedicated-server smoke
+  testing on `26.1`, `26.1.1`, `26.1.2`, `26.2`, and `26.3-snapshot-1`.
+- Refreshed the 26.x lane to Fabric Loader `0.19.3`, Fabric API
+  `0.153.0+26.2` for the compile anchor and `0.153.1+26.3` for the snapshot
+  smoke runtime, Loom `1.17-SNAPSHOT`, and Gradle `9.5.1`.
+- Completed the local `1.4.0` Modrinth dry-run gate with all supported
+  dedicated-server smokes passing and a two-entry upload plan for
+  `1.4.0+mc1.20-1.21.11` and `1.4.0+mc26.1-26.3-snapshot-1`.
 - Recorded the completed `1.3.0` Modrinth publish, GitHub validation, live
   project-page sync, and GitHub Release details.
 

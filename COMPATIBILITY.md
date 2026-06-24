@@ -1,19 +1,26 @@
 # Minecraft Compatibility
 
-Research date: 2026-06-04
+Research date: 2026-06-24
 
 Scope: HC Autopsy source compatibility planning from Minecraft `1.20` through
-`26.2-pre-3`, using the Lifetime Stat Tracker pipeline as the release/profile
+`26.3-snapshot-1`, using the Lifetime Stat Tracker pipeline as the release/profile
 model while auditing this mod's server-only API surface.
 
 ## Current Status
 
 HC Autopsy now uses the preferred two-artifact supported release shape:
-`1.20-1.21.11` plus `26.1-26.2-pre-3`. Both profiles pass local
+`1.20-1.21.11` plus `26.1-26.3-snapshot-1`. Both profiles pass local
 `buildRelease` compile probes, generated release-jar metadata checks, and
 dedicated-server smoke validation on every exact Minecraft runtime they claim.
 GitHub Actions candidate smoke validation run `26953422031` is the promotion
 evidence for the exact-version runtime matrix.
+
+On 2026-06-24, the 26.x lane was refreshed for Minecraft `26.2` final and
+`26.3-snapshot-1`. The same `26.x` source compat group compiled against
+Minecraft `26.2` with Fabric Loader `0.19.3`, Fabric API `0.153.0+26.2`, Loom
+`1.17-SNAPSHOT`, and Java `25`, then passed dedicated-server smoke tests on
+`26.1`, `26.1.1`, `26.1.2`, `26.2`, and `26.3-snapshot-1`. No new Java shim
+was required.
 
 A `1.2.1` pre-publish symbol audit also checked every exact supported runtime
 locally for death handling, player stats, world paths, command output, player
@@ -59,7 +66,7 @@ Supported two-artifact shape after compile, metadata, and smoke validation:
 | Release profile | Compile anchor | Runtime claim | Java | Source compat group |
 | --- | --- | --- | ---: | --- |
 | `1.20-1.21.11` | `1.20` | `1.20` through `1.21.11` | 17 | `1.20-1.21.11` |
-| `26.1-26.2-pre-3` | `26.2-pre-3` | `26.1`, `26.1.1`, `26.1.2`, `26.2-pre-3` | 25 | `26.x` |
+| `26.1-26.3-snapshot-1` | `26.2` | `26.1`, `26.1.1`, `26.1.2`, `26.2`, `26.3-snapshot-1` | 25 | `26.x` |
 
 Acceptable three-artifact fallback if Java/API boundaries require it:
 
@@ -67,7 +74,7 @@ Acceptable three-artifact fallback if Java/API boundaries require it:
 | --- | --- | --- | ---: | --- |
 | `1.20-1.20.4` | `1.20` | `1.20`, `1.20.1`, `1.20.2`, `1.20.3`, `1.20.4` | 17 | `1.20-1.20.4` |
 | `1.20.5-1.21.11` | `1.21.11` | `1.20.5` through `1.21.11` | 21 | `1.20.5-1.21.11` |
-| `26.1-26.2-pre-3` | `26.2-pre-3` | `26.1`, `26.1.1`, `26.1.2`, `26.2-pre-3` | 25 | `26.x` |
+| `26.1-26.3-snapshot-1` | `26.2` | `26.1`, `26.1.1`, `26.1.2`, `26.2`, `26.3-snapshot-1` | 25 | `26.x` |
 
 Only fall back to narrower shapes if binary runtime checks, dependency
 metadata, or smoke tests prove HC Autopsy really needs it. Prefer the
@@ -375,6 +382,28 @@ Local and GitHub Actions evidence from 2026-06-04:
 
 The promoted supported profiles have passing dedicated-server smoke rows for
 all exact Minecraft versions they claim.
+
+Local `1.4.0` 26.x compatibility evidence from 2026-06-24:
+
+- `.\gradlew.bat buildRelease "-Pminecraft_version_profile=26.1-26.3-snapshot-1" --no-daemon --console=plain`
+  passed and verified the `hc-autopsy-1.4.0.jar` release metadata, with
+  Minecraft dependency `>=26.1 <=26.3-alpha.1`, Java dependency `>=25`, and
+  Modrinth game versions `26.1`, `26.1.1`, `26.1.2`, `26.2`, and
+  `26.3-snapshot-1`.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=26.1-26.3-snapshot-1" "-Phcautopsy_smoke_game_versions=26.2,26.3-snapshot-1" --no-daemon --console=plain`
+  passed for Minecraft `26.2` and `26.3-snapshot-1`, with
+  `commandsExecuted=true`.
+- `.\gradlew.bat smokeTestSelectedServers "-Phcautopsy_smoke_profiles=26.1-26.3-snapshot-1" "-Phcautopsy_smoke_game_versions=26.1,26.1.1,26.1.2" --no-daemon --console=plain`
+  passed for Minecraft `26.1`, `26.1.1`, and `26.1.2`, with
+  `commandsExecuted=true`.
+- `.\gradlew.bat publishModrinthDryRun --no-daemon --console=plain` passed the
+  full local release gate in 18m 45s, repeated all 24 supported
+  dedicated-server smokes with `commandsExecuted=true`, and wrote upload-plan
+  entries for `1.4.0+mc1.20-1.21.11` and
+  `1.4.0+mc26.1-26.3-snapshot-1` without calling the Modrinth API.
+- The 26.1 exact smoke runtime profiles were refreshed to Fabric Loader
+  `0.19.3`, which Fabric Meta reports as stable for `26.1`, `26.1.1`, and
+  `26.1.2`.
 
 Local `1.1.0` release-prep evidence from 2026-06-07:
 

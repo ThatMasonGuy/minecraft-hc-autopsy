@@ -2,7 +2,7 @@
 
 This directory contains the multi-version profile metadata used by Gradle.
 The default local development profile is `1.21.11`; supported release profiles
-are `1.20-1.21.11` and `26.1-26.2-pre-3`.
+are `1.20-1.21.11` and `26.1-26.3-snapshot-1`.
 
 ## Goal
 
@@ -27,7 +27,7 @@ The current `gradle.properties` model uses:
 
 ```properties
 minecraft_version_profile=1.21.11
-supported_minecraft_version_profiles=1.20-1.21.11,26.1-26.2-pre-3
+supported_minecraft_version_profiles=1.20-1.21.11,26.1-26.3-snapshot-1
 candidate_minecraft_version_profiles=
 ```
 
@@ -36,7 +36,7 @@ runtime checks, and has passing launcher smoke records for every listed game
 version.
 
 Candidate profiles should start as broad as honestly possible. The promoted
-supported list is `1.20-1.21.11,26.1-26.2-pre-3`; both profiles pass local
+supported list is `1.20-1.21.11,26.1-26.3-snapshot-1`; both profiles pass local
 `buildRelease` compile probes, release-jar metadata probes, and
 dedicated-server smoke validation. Donor split profiles such as
 `1.20-1.20.4` and `1.20.5-1.21.10`, plus the cleaner `1.20.5-1.21.11`

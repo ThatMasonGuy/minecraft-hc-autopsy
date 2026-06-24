@@ -81,7 +81,7 @@ server `mods` folder. It does not need to be installed on players' clients.
 Choose the compatibility-group jar that matches your server:
 
 - `1.20-1.21.11`
-- `26.1-26.2-pre-3`
+- `26.1-26.3-snapshot-1`
 
 HC Autopsy stores config and run history outside launcher-local `.minecraft`
 folders:
