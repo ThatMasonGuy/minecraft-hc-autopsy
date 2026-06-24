@@ -1,9 +1,9 @@
 # HC Autopsy TODO
 
-Current checkpoint: HC Autopsy `1.4.0` is prepared locally for the Minecraft
-`26.2` final and `26.3-snapshot-1` compatibility release. HC Autopsy `1.3.0`
-remains the latest published Modrinth/GitHub release until the guarded publish
-workflow completes.
+Current checkpoint: HC Autopsy `1.4.0` is published on Modrinth and GitHub.
+The release updates the 26.x compatibility lane for Minecraft `26.2` final and
+`26.3-snapshot-1`, while preserving the existing server-only HC Autopsy
+workflow and the two-artifact release shape.
 
 ## Project Workflow
 
@@ -334,6 +334,20 @@ Known command limitations:
   repeated all 24 supported dedicated-server smokes with `commandsExecuted=true`
   and wrote a two-entry upload plan for `1.4.0+mc1.20-1.21.11` and
   `1.4.0+mc26.1-26.3-snapshot-1`.
+- Pushed `main` to `e1e15ccede53833f781d05cebd906f920c520c6e`.
+- Published HC Autopsy `1.4.0` to Modrinth through GitHub Actions workflow run
+  `28090111826`. The run repeated all 24 supported dedicated-server smokes with
+  `commandsExecuted=true`.
+- Published Modrinth version `v0ZZSbOU` for
+  `1.4.0+mc1.20-1.21.11`.
+- Published Modrinth version `jYjUmqCJ` for
+  `1.4.0+mc26.1-26.3-snapshot-1`.
+- Tagged the exact publish commit as `v1.4.0` and created the GitHub Release:
+  `https://github.com/ThatMasonGuy/minecraft-hc-autopsy/releases/tag/v1.4.0`.
+- Updated the live Modrinth project page from
+  `gradle/modrinth-project-pages.md` and verified the support-profile copy read
+  back from the API. Before/after snapshots were saved under ignored
+  `build/modrinth/` artifacts.
 
 ## Current Compatibility Conclusion
 

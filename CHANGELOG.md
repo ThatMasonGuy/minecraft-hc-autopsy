@@ -5,6 +5,13 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 
 ## Unreleased
 
+### Changed
+
+- Recorded the completed `1.4.0` Modrinth publish, GitHub validation, live
+  project-page sync, and GitHub Release details.
+
+## 1.4.0 - 2026-06-24
+
 ### Added
 
 - Added the `26.1-26.3-snapshot-1` supported profile for Minecraft `26.1`,
@@ -27,8 +34,14 @@ release notes in `gradle/release-notes/<mod_version>.md`.
 - Completed the local `1.4.0` Modrinth dry-run gate with all supported
   dedicated-server smokes passing and a two-entry upload plan for
   `1.4.0+mc1.20-1.21.11` and `1.4.0+mc26.1-26.3-snapshot-1`.
-- Recorded the completed `1.3.0` Modrinth publish, GitHub validation, live
-  project-page sync, and GitHub Release details.
+- Published HC Autopsy `1.4.0` to Modrinth through GitHub Actions workflow run
+  `28090111826`, which repeated all 24 supported dedicated-server smokes with
+  `commandsExecuted=true`.
+- Published Modrinth version `v0ZZSbOU` for `1.4.0+mc1.20-1.21.11` and
+  `jYjUmqCJ` for `1.4.0+mc26.1-26.3-snapshot-1`.
+- Tagged the exact publish commit as `v1.4.0` and created the GitHub Release.
+- Updated the live Modrinth project page from `gradle/modrinth-project-pages.md`
+  and verified the support-profile copy read back from the API.
 
 ## 1.3.0 - 2026-06-14
 

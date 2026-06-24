@@ -401,6 +401,14 @@ Local `1.4.0` 26.x compatibility evidence from 2026-06-24:
   dedicated-server smokes with `commandsExecuted=true`, and wrote upload-plan
   entries for `1.4.0+mc1.20-1.21.11` and
   `1.4.0+mc26.1-26.3-snapshot-1` without calling the Modrinth API.
+- GitHub Actions Modrinth publish run `28090111826` passed from commit
+  `e1e15ccede53833f781d05cebd906f920c520c6e`, repeated all 24 supported
+  dedicated-server smokes with `commandsExecuted=true`, and published
+  `1.4.0+mc1.20-1.21.11` as Modrinth version `v0ZZSbOU` plus
+  `1.4.0+mc26.1-26.3-snapshot-1` as Modrinth version `jYjUmqCJ`.
+- The live Modrinth project page was updated from
+  `gradle/modrinth-project-pages.md` and API readback matched the committed
+  support-profile copy.
 - The 26.1 exact smoke runtime profiles were refreshed to Fabric Loader
   `0.19.3`, which Fabric Meta reports as stable for `26.1`, `26.1.1`, and
   `26.1.2`.

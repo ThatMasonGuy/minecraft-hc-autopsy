@@ -18,6 +18,10 @@ Release `1.3.0` was published from commit
 `5aeb5e71338ef024e35c8b825a0e538d83594c64` by GitHub Actions run
 `27497063024`.
 
+Release `1.4.0` was published from commit
+`e1e15ccede53833f781d05cebd906f920c520c6e` by GitHub Actions run
+`28090111826`.
+
 Release `1.2.1` was published from commit
 `f2d78fa95d2b7eff5fe2192b9aa542c86eb0327c` by GitHub Actions run
 `27429181718`.
@@ -36,6 +40,8 @@ Release `1.0.0` was published from commit
 
 Published Modrinth versions:
 
+- `1.4.0+mc1.20-1.21.11`: `v0ZZSbOU`
+- `1.4.0+mc26.1-26.3-snapshot-1`: `jYjUmqCJ`
 - `1.3.0+mc1.20-1.21.11`: `EY25dRsh`
 - `1.3.0+mc26.1-26.2-pre-3`: `ouw0TJqM`
 - `1.2.1+mc1.20-1.21.11`: `OubGKHg0`
